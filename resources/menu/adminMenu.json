@@ -1,0 +1,98 @@
+{
+  "menu": [
+    {
+      "url": "/admin/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons bx bx-home-circle",
+      "slug": "admin.dashboard"
+    },
+    {
+      "menuHeader": "Management"
+    },
+    {
+      "name": "Users",
+      "icon": "menu-icon tf-icons bx bx-user",
+      "slug": "admin.index",
+      "submenu": [
+        {
+          "url": "/admin/users",
+          "name": "All Users",
+          "slug": "admin.users.index"
+        },
+        {
+          "url": "/admin/users/landlords",
+          "name": "Landlords",
+          "slug": "admin.users.landlords"
+        },
+        {
+          "url": "/admin/users/tenants",
+          "name": "Tenants",
+          "slug": "admin.users.tenants"
+        }
+      ]
+    },
+    {
+      "url": "/admin/properties",
+      "name": "Properties",
+      "icon": "menu-icon tf-icons bx bx-building-house",
+      "slug": "admin.properties.index"
+    },
+    {
+      "url": "/admin/bookings",
+      "name": "Bookings",
+      "icon": "menu-icon tf-icons bx bx-calendar-check",
+      "slug": "admin.bookings.index"
+    },
+    {
+      "url": "/admin/reviews",
+      "name": "Reviews",
+      "icon": "menu-icon tf-icons bx bx-star",
+      "slug": "admin.reviews.index"
+    },
+    {
+      "menuHeader": "Content"
+    },
+    {
+      "url": "/admin/amenities",
+      "name": "Amenities",
+      "icon": "menu-icon tf-icons bx bx-list-ul",
+      "slug": "admin.amenities.index"
+    },
+    {
+      "menuHeader": "System"
+    },
+    {
+      "url": "/admin/reports",
+      "name": "Reports",
+      "icon": "menu-icon tf-icons bx bx-bar-chart-alt-2",
+      "slug": "admin-reports"
+    },
+    {
+      "url": "/admin/activity-logs",
+      "name": "Activity Logs",
+      "icon": "menu-icon tf-icons bx bx-history",
+      "slug": "admin-activity-logs"
+    },
+    {
+      "url": "/admin/settings",
+      "name": "Settings",
+      "icon": "menu-icon tf-icons bx bx-cog",
+      "slug": "admin-settings"
+    },
+    {
+      "menuHeader": "Account"
+    },
+    {
+      "url": "/admin/profile",
+      "name": "Profile",
+      "icon": "menu-icon tf-icons bx bx-user-circle",
+      "slug": "admin-profile"
+    },
+    {
+      "url": "/logout",
+      "name": "Logout",
+      "icon": "menu-icon tf-icons bx bx-power-off",
+      "slug": "logout"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "menu": [
+    {
+      "url": "/user/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons bx bx-home-circle",
+      "slug": "dashboard.user"
+    },
+    {
+      "menuHeader": "Boarding Houses"
+    },
+    {
+      "url": "/find-boarding-houses",
+      "name": "Find Boarding House",
+      "icon": "menu-icon tf-icons bx bx-search-alt",
+      "slug": "recommendations"
+    },
+    {
+      "url": "/my-ratings",
+      "name": "My Reviews",
+      "icon": "menu-icon tf-icons bx bx-star",
+      "slug": "ratings.index"
+    },
+    {
+      "menuHeader": "Bookings"
+    },
+    {
+      "url": "/bookings",
+      "name": "My Bookings",
+      "icon": "menu-icon tf-icons bx bx-calendar-check",
+      "slug": "bookings.index"
+    },
+    {
+      "menuHeader": "Preferences"
+    },
+    {
+      "url": "/my-preferences",
+      "name": "My Preferences",
+      "icon": "menu-icon tf-icons bx bx-slider-alt",
+      "slug": "preferences.index"
+    },
+    {
+      "menuHeader": "Account"
+    },
+    {
+      "url": "/user/profile",
+      "name": "Profile Settings",
+      "icon": "menu-icon tf-icons bx bx-user",
+      "slug": "profile"
+    },
+    {
+      "url": "/logout",
+      "name": "Logout",
+      "icon": "menu-icon tf-icons bx bx-power-off",
+      "slug": "logout"
+    }
+  ]
+}
