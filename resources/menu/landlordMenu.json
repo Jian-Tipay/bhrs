@@ -1,0 +1,73 @@
+{
+  "menu": [
+    {
+      "url": "/landlord/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons bx bx-home-circle",
+      "slug": "dashboard.landlord"
+    },
+    {
+      "menuHeader": "Properties"
+    },
+    {
+      "url": "/landlord/properties",
+      "name": "My Properties",
+      "icon": "menu-icon tf-icons bx bx-buildings",
+      "slug": "landlord.properties.show"
+    },
+    {
+      "url": "/landlord/properties/create",
+      "name": "Add Property",
+      "icon": "menu-icon tf-icons bx bx-plus-circle",
+      "slug": "landlord.properties.create"
+    },
+    {
+      "menuHeader": "Bookings"
+    },
+    {
+      "url": "/landlord/bookings",
+      "name": "Booking Requests",
+      "icon": "menu-icon tf-icons bx bx-calendar-check",
+      "slug": "landlord.bookings.index"
+    },
+    {
+      "url": "/landlord/tenants",
+      "name": "My Tenants",
+      "icon": "menu-icon tf-icons bx bx-user",
+      "slug": "landlord.tenants.index"
+    },
+    {
+      "menuHeader": "Reviews"
+    },
+    {
+      "url": "/landlord/reviews",
+      "name": "Property Reviews",
+      "icon": "menu-icon tf-icons bx bx-star",
+      "slug": "landlord.reviews.index"
+    },
+    {
+      "menuHeader": "Reports"
+    },
+    {
+      "url": "/landlord/reports",
+      "name": "Reports & Analytics",
+      "icon": "menu-icon tf-icons bx bx-bar-chart-alt-2",
+      "slug": "landlord.reports.index"
+    },
+    {
+      "menuHeader": "Account"
+    },
+    {
+      "url": "/landlord/profile",
+      "name": "Profile Settings",
+      "icon": "menu-icon tf-icons bx bx-user-circle",
+      "slug": "landlord.profile.index"
+    },
+    {
+      "url": "/logout",
+      "name": "Logout",
+      "icon": "menu-icon tf-icons bx bx-power-off",
+      "slug": "logout"
+    }
+  ]
+}
