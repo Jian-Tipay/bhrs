@@ -227,7 +227,7 @@
               <div class="ms-3">
                 <h6 class="mb-1">{{ $similar->title }}</h6>
                 <p class="mb-0 text-success">₱{{ number_format($similar->price, 2) }}</p>
-                <a href="{{ route('properties.show', $similar->id) }}" class="btn btn-sm btn-outline-primary mt-1">View</a>
+                <a href="{{ route('properties.view', $similar->id) }}" class="btn btn-sm btn-outline-primary mt-1">View</a>
               </div>
             </div>
           @endforeach

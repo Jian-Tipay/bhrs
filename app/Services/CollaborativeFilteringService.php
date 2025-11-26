@@ -18,7 +18,7 @@ class CollaborativeFilteringService
 
     public function __construct()
     {
-        $this->pythonServiceUrl = env('PYTHON_CF_URL', 'http://127.0.0.1:8001');
+        $this->pythonServiceUrl = env('PYTHON_CF_URL', 'https://bhrs-slsu.onrender.com/');
         $this->pythonServiceTimeout = env('PYTHON_CF_TIMEOUT', 5);
     }
 
@@ -27,13 +27,7 @@ class CollaborativeFilteringService
      */
     public function isPythonServiceAvailable()
     {
-        try {
-            $response = Http::timeout(2)->get("{$this->pythonServiceUrl}/health");
-            return $response->successful();
-        } catch (\Exception $e) {
-            Log::warning('Python CF service unavailable: ' . $e->getMessage());
-            return false;
-        }
+        return true;
     }
 
     /**

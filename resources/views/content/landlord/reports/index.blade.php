@@ -6,16 +6,16 @@
 <div class="row">
   <!-- Header -->
   <div class="col-12 mb-4">
-    <div class="card">
-      <div class="card-body">
+    <div class="card bg-primary text-white">
+      <div class="card-body py-3">
         <div class="d-flex justify-content-between align-items-center">
           <div>
-            <h4 class="mb-1">📊 Reports & Analytics</h4>
-            <p class="mb-0 text-muted">Track your business performance and insights</p>
+            <h4 class="mb-1 text-white">📊 Reports & Analytics</h4>
+            <p class="mb-0 text-white opacity-75">Track your business performance and insights</p>
           </div>
           <div class="d-flex gap-2">
             <div class="btn-group">
-              <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+              <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                 <i class='bx bx-filter'></i> 
                 @if(request('period') == 7)
                   Last 7 Days
@@ -36,12 +36,12 @@
                 <li><a class="dropdown-item" href="{{ route('landlord.reports.index', ['period' => 365]) }}">Last Year</a></li>
               </ul>
             </div>
-            <button type="button" class="btn btn-primary" data-bs-toggle="dropdown">
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="dropdown">
               <i class='bx bx-download'></i> Export
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ route('landlord.reports.export-pdf') }}"><i class='bx bxs-file-pdf me-2'></i>Export as PDF</a></li>
-              <li><a class="dropdown-item" href="{{ route('landlord.reports.export-excel') }}"><i class='bx bxs-file me-2'></i>Export as Excel</a></li>
+              <li><a class="dropdown-item" href="{{ route('landlord.reports.export-pdf', ['period' => request('period', 30)]) }}"><i class='bx bxs-file-pdf me-2'></i>Export as PDF</a></li>
+              <li><a class="dropdown-item" href="{{ route('landlord.reports.export-excel', ['period' => request('period', 30)]) }}"><i class='bx bxs-file me-2'></i>Export as Excel</a></li>
             </ul>
           </div>
         </div>
@@ -49,22 +49,24 @@
     </div>
   </div>
 
-  <!-- Key Metrics -->
-  <div class="col-lg-3 col-md-6 mb-4">
+  <!-- Key Metrics Row -->
+  <div class="col-xl-3 col-sm-6 mb-4">
     <div class="card">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <p class="card-text text-muted mb-1">Total Revenue</p>
-            <h3 class="mb-0">₱{{ number_format($totalRevenue ?? 0, 2) }}</h3>
-            <small class="text-success">
-              <i class='bx bx-up-arrow-alt'></i> 
-              <span class="fw-semibold">12.5%</span> from last period
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="content-left">
+            <span class="text-muted d-block mb-1">Total Revenue</span>
+            <div class="d-flex align-items-center mb-1">
+              <h3 class="mb-0 me-2">₱{{ number_format($totalRevenue ?? 0, 0) }}</h3>
+            </div>
+            <small class="{{ ($revenueChange ?? 0) >= 0 ? 'text-success' : 'text-danger' }} fw-semibold">
+              <i class='bx bx-{{ ($revenueChange ?? 0) >= 0 ? "up" : "down" }}-arrow-alt'></i> 
+              {{ number_format(abs($revenueChange ?? 0), 1) }}%
             </small>
           </div>
-          <div class="card-icon">
-            <span class="badge bg-label-success rounded p-3">
-              <i class='bx bx-money bx-lg'></i>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-success">
+              <i class='bx bx-wallet bx-lg'></i>
             </span>
           </div>
         </div>
@@ -72,21 +74,23 @@
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6 mb-4">
+  <div class="col-xl-3 col-sm-6 mb-4">
     <div class="card">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <p class="card-text text-muted mb-1">Occupancy Rate</p>
-            <h3 class="mb-0">{{ number_format($occupancyRate ?? 0, 1) }}%</h3>
-            <small class="text-info">
-              <i class='bx bx-up-arrow-alt'></i> 
-              <span class="fw-semibold">5.2%</span> from last period
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="content-left">
+            <span class="text-muted d-block mb-1">Total Views</span>
+            <div class="d-flex align-items-center mb-1">
+              <h3 class="mb-0 me-2">{{ number_format($totalViews ?? 0) }}</h3>
+            </div>
+            <small class="{{ ($viewsChange ?? 0) >= 0 ? 'text-success' : 'text-danger' }} fw-semibold">
+              <i class='bx bx-{{ ($viewsChange ?? 0) >= 0 ? "up" : "down" }}-arrow-alt'></i> 
+              {{ number_format(abs($viewsChange ?? 0), 1) }}%
             </small>
           </div>
-          <div class="card-icon">
-            <span class="badge bg-label-info rounded p-3">
-              <i class='bx bx-home bx-lg'></i>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-info">
+              <i class='bx bx-show bx-lg'></i>
             </span>
           </div>
         </div>
@@ -94,20 +98,22 @@
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6 mb-4">
+  <div class="col-xl-3 col-sm-6 mb-4">
     <div class="card">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <p class="card-text text-muted mb-1">Total Bookings</p>
-            <h3 class="mb-0">{{ $totalBookings ?? 0 }}</h3>
-            <small class="text-primary">
-              <i class='bx bx-up-arrow-alt'></i> 
-              <span class="fw-semibold">8.1%</span> from last period
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="content-left">
+            <span class="text-muted d-block mb-1">Total Bookings</span>
+            <div class="d-flex align-items-center mb-1">
+              <h3 class="mb-0 me-2">{{ $totalBookings ?? 0 }}</h3>
+            </div>
+            <small class="{{ ($bookingsChange ?? 0) >= 0 ? 'text-success' : 'text-danger' }} fw-semibold">
+              <i class='bx bx-{{ ($bookingsChange ?? 0) >= 0 ? "up" : "down" }}-arrow-alt'></i> 
+              {{ number_format(abs($bookingsChange ?? 0), 1) }}%
             </small>
           </div>
-          <div class="card-icon">
-            <span class="badge bg-label-primary rounded p-3">
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-primary">
               <i class='bx bx-calendar-check bx-lg'></i>
             </span>
           </div>
@@ -116,21 +122,22 @@
     </div>
   </div>
 
-  <div class="col-lg-3 col-md-6 mb-4">
+  <div class="col-xl-3 col-sm-6 mb-4">
     <div class="card">
       <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <p class="card-text text-muted mb-1">Average Rating</p>
-            <h3 class="mb-0">{{ number_format($averageRating ?? 0, 1) }}</h3>
-            <small class="text-warning">
-              <i class='bx bx-star'></i> 
-              <span class="fw-semibold">{{ $totalReviews ?? 0 }}</span> reviews
+        <div class="d-flex align-items-start justify-content-between">
+          <div class="content-left">
+            <span class="text-muted d-block mb-1">Occupancy Rate</span>
+            <div class="d-flex align-items-center mb-1">
+              <h3 class="mb-0 me-2">{{ number_format($occupancyRate ?? 0, 1) }}%</h3>
+            </div>
+            <small class="text-muted">
+              {{ $occupiedSlots ?? 0 }}/{{ $totalCapacity ?? 0 }} slots
             </small>
           </div>
-          <div class="card-icon">
-            <span class="badge bg-label-warning rounded p-3">
-              <i class='bx bx-star bx-lg'></i>
+          <div class="avatar">
+            <span class="avatar-initial rounded bg-label-warning">
+              <i class='bx bx-home bx-lg'></i>
             </span>
           </div>
         </div>
@@ -138,117 +145,156 @@
     </div>
   </div>
 
-  <!-- Revenue Chart -->
+  <!-- Chart and Stats Row -->
   <div class="col-lg-8 mb-4">
     <div class="card">
-      <div class="card-header d-flex justify-content-between">
-        <h5 class="mb-0">Revenue Overview</h5>
-        <div class="btn-group btn-group-sm" role="group">
-          <input type="radio" class="btn-check" name="revenue-period" id="revenue-week" checked>
-          <label class="btn btn-outline-primary" for="revenue-week">Week</label>
-          
-          <input type="radio" class="btn-check" name="revenue-period" id="revenue-month">
-          <label class="btn btn-outline-primary" for="revenue-month">Month</label>
-          
-          <input type="radio" class="btn-check" name="revenue-period" id="revenue-year">
-          <label class="btn btn-outline-primary" for="revenue-year">Year</label>
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Revenue & Views Trend</h5>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Last 12 Months
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="javascript:void(0);">Last 6 Months</a></li>
+            <li><a class="dropdown-item" href="javascript:void(0);">Last 12 Months</a></li>
+          </ul>
         </div>
       </div>
-      <div class="card-body">
-        <canvas id="revenueChart" height="100"></canvas>
+      <div class="card-body pb-0">
+        <canvas id="combinedChart" style="height: 300px;"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- Occupancy Trend -->
   <div class="col-lg-4 mb-4">
-    <div class="card h-100">
-      <div class="card-header">
-        <h5 class="mb-0">Occupancy Trend</h5>
+    <div class="card mb-4">
+      <div class="card-body text-center">
+        <div class="avatar avatar-xl mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-success">
+            <i class='bx bx-trending-up bx-lg'></i>
+          </span>
+        </div>
+        <h4 class="mb-1">{{ number_format($conversionRate ?? 0, 1) }}%</h4>
+        <p class="mb-0 text-muted">Conversion Rate</p>
+        <small class="text-muted">{{ $totalBookings ?? 0 }} bookings from {{ $totalViews ?? 0 }} views</small>
       </div>
-      <div class="card-body">
-        <div style="position: relative; height: 200px;">
-          <canvas id="occupancyChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-body text-center">
+        <div class="avatar avatar-xl mx-auto mb-3">
+          <span class="avatar-initial rounded-circle bg-label-warning">
+            <i class='bx bxs-star bx-lg'></i>
+          </span>
         </div>
-        <div class="mt-3">
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Total Capacity</span>
-            <span class="fw-semibold">{{ $totalCapacity ?? 0 }} slots</span>
-          </div>
-          <div class="d-flex justify-content-between mb-2">
-            <span class="text-muted">Occupied</span>
-            <span class="fw-semibold text-success">{{ $occupiedSlots ?? 0 }} slots</span>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span class="text-muted">Available</span>
-            <span class="fw-semibold text-primary">{{ ($totalCapacity ?? 0) - ($occupiedSlots ?? 0) }} slots</span>
-          </div>
+        <h4 class="mb-1">{{ number_format($averageRating ?? 0, 1) }}</h4>
+        <p class="mb-0 text-muted">Average Rating</p>
+        <div class="mt-2">
+          @for($i = 1; $i <= 5; $i++)
+            @if($i <= floor($averageRating ?? 0))
+              <i class='bx bxs-star text-warning'></i>
+            @elseif($i - 0.5 <= ($averageRating ?? 0))
+              <i class='bx bxs-star-half text-warning'></i>
+            @else
+              <i class='bx bx-star text-muted'></i>
+            @endif
+          @endfor
         </div>
+        <small class="text-muted">Based on {{ $totalReviews ?? 0 }} reviews</small>
       </div>
     </div>
   </div>
 
-  <!-- Property Performance Table -->
-  <div class="col-lg-8 mb-4">
+  <!-- Property Performance -->
+  <div class="col-12 mb-4">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">Property Performance</h5>
+        <h5 class="mb-0">🏆 Top Performing Properties</h5>
       </div>
-      <div class="card-body">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover">
+          <table class="table table-hover mb-0">
             <thead>
               <tr>
+                <th class="text-center">#</th>
                 <th>Property</th>
-                <th>Bookings</th>
-                <th>Occupancy</th>
-                <th>Revenue</th>
-                <th>Rating</th>
-                <th>Status</th>
+                <th class="text-center">Views</th>
+                <th class="text-center">Bookings</th>
+                <th class="text-center">Conversion</th>
+                <th class="text-center">Revenue</th>
+                <th class="text-center">Rating</th>
+                <th class="text-center">Status</th>
               </tr>
             </thead>
             <tbody>
-              @forelse($propertyPerformance ?? [] as $property)
+              @forelse($propertyPerformance ?? [] as $index => $property)
                 <tr>
-                  <td>
-                    <div class="d-flex flex-column">
-                      <span class="fw-semibold">{{ $property->title }}</span>
-                      <small class="text-muted">{{ Str::limit($property->address, 30) }}</small>
-                    </div>
+                  <td class="text-center">
+                    <span class="badge badge-center rounded-pill {{ $index < 3 ? 'bg-label-primary' : 'bg-label-secondary' }}" style="width: 30px; height: 30px;">
+                      {{ $index + 1 }}
+                    </span>
                   </td>
                   <td>
-                    <span class="badge bg-label-primary">{{ $property->bookings_count ?? 0 }}</span>
-                  </td>
-                  <td>
-                    @php
-                      $occupancy = $property->capacity > 0 ? (($property->capacity - $property->available_slots) / $property->capacity) * 100 : 0;
-                    @endphp
                     <div class="d-flex align-items-center">
-                      <div class="progress flex-grow-1 me-2" style="height: 6px;">
-                        <div class="progress-bar bg-{{ $occupancy >= 80 ? 'success' : ($occupancy >= 50 ? 'warning' : 'danger') }}" 
-                             style="width: {{ $occupancy }}%"></div>
+                      @if($property->image && file_exists(public_path('assets/img/boarding/' . $property->image)))
+                        <img src="{{ asset('assets/img/boarding/' . $property->image) }}" 
+                             alt="{{ $property->title }}" 
+                             class="rounded me-3" 
+                             style="width: 45px; height: 45px; object-fit: cover;">
+                      @else
+                        <div class="avatar avatar-sm me-3 bg-label-primary">
+                          <span class="avatar-initial rounded">{{ substr($property->title, 0, 1) }}</span>
+                        </div>
+                      @endif
+                      <div>
+                        <a href="{{ route('landlord.properties.view', $property->id) }}" class="fw-semibold text-primary text-decoration-none">
+                          {{ $property->title }}
+                        </a>
+                        <small class="text-muted d-block">{{ Str::limit($property->address, 35) }}</small>
                       </div>
-                      <small class="fw-semibold">{{ number_format($occupancy, 0) }}%</small>
                     </div>
                   </td>
-                  <td class="fw-semibold">₱{{ number_format($property->price * $property->bookings_count, 2) }}</td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <i class='bx bxs-star text-warning me-1'></i>
-                      <span class="fw-semibold">{{ number_format($property->ratings_avg_rating ?? 0, 1) }}</span>
-                    </div>
+                  <td class="text-center">
+                    <span class="badge bg-label-info rounded-pill">{{ $property->views_count ?? 0 }}</span>
                   </td>
-                  <td>
-                    @if($property->is_active)
-                      <span class="badge bg-label-success">Active</span>
+                  <td class="text-center">
+                    <span class="badge bg-label-primary rounded-pill">{{ $property->bookings_count ?? 0 }}</span>
+                  </td>
+                  <td class="text-center">
+                    @php
+                      $propConversion = ($property->views_count ?? 0) > 0 ? (($property->bookings_count ?? 0) / $property->views_count) * 100 : 0;
+                    @endphp
+                    <span class="fw-semibold {{ $propConversion >= 10 ? 'text-success' : ($propConversion >= 5 ? 'text-warning' : 'text-muted') }}">
+                      {{ number_format($propConversion, 1) }}%
+                    </span>
+                  </td>
+                  <td class="text-center fw-semibold">
+                    ₱{{ number_format($property->price * ($property->bookings_count ?? 0), 0) }}
+                  </td>
+                  <td class="text-center">
+                    @if($property->ratings_avg_rating)
+                      <div class="d-flex align-items-center justify-content-center">
+                        <i class='bx bxs-star text-warning me-1'></i>
+                        <span class="fw-semibold">{{ number_format($property->ratings_avg_rating, 1) }}</span>
+                      </div>
                     @else
-                      <span class="badge bg-label-secondary">Inactive</span>
+                      <span class="text-muted">—</span>
+                    @endif
+                  </td>
+                  <td class="text-center">
+                    @if($property->is_active && $property->available)
+                      <span class="badge bg-success">Active</span>
+                    @elseif($property->is_active)
+                      <span class="badge bg-warning">Full</span>
+                    @else
+                      <span class="badge bg-secondary">Inactive</span>
                     @endif
                   </td>
                 </tr>
               @empty
                 <tr>
-                  <td colspan="6" class="text-center py-4 text-muted">
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    <i class='bx bx-building-house display-4 d-block mb-2'></i>
                     No property data available
                   </td>
                 </tr>
@@ -260,44 +306,65 @@
     </div>
   </div>
 
-  <!-- Booking Status Distribution -->
-  <div class="col-lg-4 mb-4">
-    <div class="card h-100">
+  <!-- Bottom Row: Booking Status & Activity -->
+  <div class="col-lg-6 mb-4">
+    <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">Booking Status</h5>
+        <h5 class="mb-0">📋 Booking Status Overview</h5>
       </div>
       <div class="card-body">
-        <div style="position: relative; height: 200px;">
-          <canvas id="bookingStatusChart"></canvas>
-        </div>
-        <div class="mt-3">
-          <div class="d-flex justify-content-between mb-2">
+        <div class="row g-3">
+          <div class="col-6">
             <div class="d-flex align-items-center">
-              <span class="badge badge-dot bg-success me-2"></span>
-              <span class="text-muted">Active</span>
+              <div class="avatar flex-shrink-0 me-3">
+                <span class="avatar-initial rounded bg-label-success">
+                  <i class='bx bx-check-circle bx-sm'></i>
+                </span>
+              </div>
+              <div>
+                <h5 class="mb-0">{{ $activeBookings ?? 0 }}</h5>
+                <small class="text-muted">Active</small>
+              </div>
             </div>
-            <span class="fw-semibold">{{ $activeBookings ?? 0 }}</span>
           </div>
-          <div class="d-flex justify-content-between mb-2">
+          <div class="col-6">
             <div class="d-flex align-items-center">
-              <span class="badge badge-dot bg-warning me-2"></span>
-              <span class="text-muted">Pending</span>
+              <div class="avatar flex-shrink-0 me-3">
+                <span class="avatar-initial rounded bg-label-warning">
+                  <i class='bx bx-time bx-sm'></i>
+                </span>
+              </div>
+              <div>
+                <h5 class="mb-0">{{ $pendingBookings ?? 0 }}</h5>
+                <small class="text-muted">Pending</small>
+              </div>
             </div>
-            <span class="fw-semibold">{{ $pendingBookings ?? 0 }}</span>
           </div>
-          <div class="d-flex justify-content-between mb-2">
+          <div class="col-6">
             <div class="d-flex align-items-center">
-              <span class="badge badge-dot bg-info me-2"></span>
-              <span class="text-muted">Approved</span>
+              <div class="avatar flex-shrink-0 me-3">
+                <span class="avatar-initial rounded bg-label-info">
+                  <i class='bx bx-check-double bx-sm'></i>
+                </span>
+              </div>
+              <div>
+                <h5 class="mb-0">{{ $approvedBookings ?? 0 }}</h5>
+                <small class="text-muted">Approved</small>
+              </div>
             </div>
-            <span class="fw-semibold">{{ $approvedBookings ?? 0 }}</span>
           </div>
-          <div class="d-flex justify-content-between">
+          <div class="col-6">
             <div class="d-flex align-items-center">
-              <span class="badge badge-dot bg-secondary me-2"></span>
-              <span class="text-muted">Completed</span>
+              <div class="avatar flex-shrink-0 me-3">
+                <span class="avatar-initial rounded bg-label-secondary">
+                  <i class='bx bx-archive bx-sm'></i>
+                </span>
+              </div>
+              <div>
+                <h5 class="mb-0">{{ $completedBookings ?? 0 }}</h5>
+                <small class="text-muted">Completed</small>
+              </div>
             </div>
-            <span class="fw-semibold">{{ $completedBookings ?? 0 }}</span>
           </div>
         </div>
       </div>
@@ -308,84 +375,28 @@
   <div class="col-lg-6 mb-4">
     <div class="card">
       <div class="card-header">
-        <h5 class="mb-0">Recent Activity</h5>
+        <h5 class="mb-0">🔔 Recent Activity</h5>
       </div>
       <div class="card-body">
-        <ul class="timeline mb-0">
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-success"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">New Booking</h6>
-                <small class="text-muted">2 hours ago</small>
+        <ul class="timeline mb-0 pb-0">
+          @forelse($recentActivity ?? [] as $activity)
+            <li class="timeline-item timeline-item-transparent {{ $loop->last ? '' : 'pb-3' }}">
+              <span class="timeline-point timeline-point-{{ $activity['color'] }}"></span>
+              <div class="timeline-event">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <h6 class="mb-0">{{ $activity['title'] }}</h6>
+                  <small class="text-muted">{{ $activity['time'] }}</small>
+                </div>
+                <p class="mb-0 text-muted small">{{ $activity['message'] }}</p>
               </div>
-              <p class="mb-2">John Doe booked Sunshine Apartment</p>
-            </div>
-          </li>
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-info"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">Payment Received</h6>
-                <small class="text-muted">5 hours ago</small>
-              </div>
-              <p class="mb-2">₱5,000 payment from Maria Santos</p>
-            </div>
-          </li>
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-warning"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">New Review</h6>
-                <small class="text-muted">1 day ago</small>
-              </div>
-              <p class="mb-2">5-star review on Garden View House</p>
-            </div>
-          </li>
-          <li class="timeline-item timeline-item-transparent">
-            <span class="timeline-point timeline-point-primary"></span>
-            <div class="timeline-event">
-              <div class="timeline-header mb-1">
-                <h6 class="mb-0">Lease Completed</h6>
-                <small class="text-muted">2 days ago</small>
-              </div>
-              <p class="mb-2">Juan Cruz completed 6-month lease</p>
-            </div>
-          </li>
+            </li>
+          @empty
+            <li class="text-center text-muted py-3">
+              <i class='bx bx-info-circle display-4 d-block mb-2'></i>
+              No recent activity
+            </li>
+          @endforelse
         </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Performing Properties -->
-  <div class="col-lg-6 mb-4">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Top Performing Properties</h5>
-      </div>
-      <div class="card-body">
-        @forelse($propertyPerformance->take(5) ?? [] as $index => $property)
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex align-items-center flex-grow-1">
-              <div class="badge badge-center rounded-pill bg-label-primary me-3" style="width: 32px; height: 32px;">
-                {{ $index + 1 }}
-              </div>
-              <div class="flex-grow-1">
-                <h6 class="mb-0">{{ $property->title }}</h6>
-                <small class="text-muted">{{ $property->bookings_count ?? 0 }} bookings</small>
-              </div>
-            </div>
-            <div class="text-end">
-              <span class="fw-semibold">₱{{ number_format($property->price * ($property->bookings_count ?? 0), 0) }}</span>
-              <div class="d-flex align-items-center">
-                <i class='bx bxs-star text-warning me-1' style="font-size: 14px;"></i>
-                <small>{{ number_format($property->ratings_avg_rating ?? 0, 1) }}</small>
-              </div>
-            </div>
-          </div>
-        @empty
-          <p class="text-center text-muted">No property data available</p>
-        @endforelse
       </div>
     </div>
   </div>
@@ -395,96 +406,87 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Revenue Chart
-  const revenueCtx = document.getElementById('revenueChart');
-  if (revenueCtx) {
-    new Chart(revenueCtx, {
+  const combinedCtx = document.getElementById('combinedChart');
+  if (combinedCtx) {
+    const labels = @json($revenueChartLabels ?? []);
+    const revenueData = @json($revenueChartData ?? []);
+    const viewsData = @json($viewsChartData ?? []);
+    
+    new Chart(combinedCtx, {
       type: 'line',
       data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{
-          label: 'Revenue',
-          data: [12000, 15000, 13000, 17000, 16000, 19000, 22000, 20000, 23000, 25000, 24000, 28000],
-          borderColor: '#696cff',
-          backgroundColor: 'rgba(105, 108, 255, 0.1)',
-          tension: 0.4,
-          fill: true
-        }]
+        labels: labels,
+        datasets: [
+          {
+            label: 'Revenue (₱)',
+            data: revenueData,
+            borderColor: '#71dd37',
+            backgroundColor: 'rgba(113, 221, 55, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Views',
+            data: viewsData,
+            borderColor: '#03c3ec',
+            backgroundColor: 'rgba(3, 195, 236, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         plugins: {
           legend: {
-            display: false
+            display: true,
+            position: 'top',
+            align: 'end'
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.dataset.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.dataset.yAxisID === 'y') {
+                  label += '₱' + context.parsed.y.toLocaleString();
+                } else {
+                  label += context.parsed.y;
+                }
+                return label;
+              }
+            }
           }
         },
         scales: {
           y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
             beginAtZero: true,
             ticks: {
               callback: function(value) {
                 return '₱' + value.toLocaleString();
               }
             }
-          }
-        }
-      }
-    });
-  }
-
-  // Occupancy Chart (Doughnut)
-  const occupancyCtx = document.getElementById('occupancyChart');
-  if (occupancyCtx) {
-    const occupancyRate = {{ $occupancyRate ?? 0 }};
-    new Chart(occupancyCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Occupied', 'Available'],
-        datasets: [{
-          data: [occupancyRate, 100 - occupancyRate],
-          backgroundColor: ['#71dd37', '#e7e7e7'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '75%',
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
-  }
-
-  // Booking Status Chart (Doughnut)
-  const bookingStatusCtx = document.getElementById('bookingStatusChart');
-  if (bookingStatusCtx) {
-    new Chart(bookingStatusCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Active', 'Pending', 'Approved', 'Completed'],
-        datasets: [{
-          data: [
-            {{ $activeBookings ?? 0 }},
-            {{ $pendingBookings ?? 0 }},
-            {{ $approvedBookings ?? 0 }},
-            {{ $completedBookings ?? 0 }}
-          ],
-          backgroundColor: ['#71dd37', '#ffab00', '#03c3ec', '#8592a3'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '70%',
-        plugins: {
-          legend: {
-            display: false
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            beginAtZero: true,
+            grid: {
+              drawOnChartArea: false
+            }
           }
         }
       }
@@ -497,14 +499,14 @@ document.addEventListener('DOMContentLoaded', function() {
 .timeline {
   position: relative;
   padding-left: 30px;
-  margin: 0;
   list-style: none;
+  margin: 0;
 }
 
 .timeline::before {
   content: '';
   position: absolute;
-  left: 8px;
+  left: 9px;
   top: 0;
   bottom: 0;
   width: 2px;
@@ -513,18 +515,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .timeline-item {
   position: relative;
-  padding-bottom: 20px;
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
 }
 
 .timeline-point {
   position: absolute;
-  left: -22px;
-  width: 18px;
-  height: 18px;
+  left: -21px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   border: 3px solid #fff;
   box-shadow: 0 0 0 1px #e7e7e7;
@@ -534,12 +531,12 @@ document.addEventListener('DOMContentLoaded', function() {
   background: #71dd37;
 }
 
-.timeline-point-info {
-  background: #03c3ec;
-}
-
 .timeline-point-warning {
   background: #ffab00;
+}
+
+.timeline-point-info {
+  background: #03c3ec;
 }
 
 .timeline-point-primary {
@@ -550,11 +547,8 @@ document.addEventListener('DOMContentLoaded', function() {
   padding-left: 15px;
 }
 
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  padding: 0;
+.table > :not(caption) > * > * {
+  padding: 0.875rem 1rem;
 }
 </style>
 @endsection

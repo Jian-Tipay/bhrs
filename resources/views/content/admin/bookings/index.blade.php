@@ -208,7 +208,10 @@
                       <div class="d-flex align-items-center">
                         <div class="avatar avatar-sm me-2">
                           @if($booking->user->profile_picture)
-                            <img src="{{ asset('storage/' . $booking->user->profile_picture) }}" alt="{{ $booking->user->first_name }}" class="rounded-circle">
+                            <img src="{{ asset($booking->user->profile_picture) }}" 
+                                 alt="{{ $booking->user->first_name }}" 
+                                 class="rounded-circle"
+                                 style="width: 38px; height: 38px; object-fit: cover;">
                           @else
                             <span class="avatar-initial rounded-circle bg-label-primary">
                               {{ strtoupper(substr($booking->user->first_name, 0, 1)) }}
@@ -308,7 +311,7 @@
                           <i class='bx bx-dots-vertical-rounded'></i>
                         </button>
                         <div class="dropdown-menu">
-                          <a class="dropdown-item" href="{{ route('properties.show', $booking->property->id) }}" target="_blank">
+                          <a class="dropdown-item" href="{{ route('properties.view', $booking->property->id) }}" target="_blank">
                             <i class='bx bx-building-house me-1'></i> View Property
                           </a>
                           <a class="dropdown-item" href="{{ route('admin.users.view', $booking->user->id) }}">
@@ -340,8 +343,16 @@
                           <div class="row mb-3">
                             <div class="col-6">
                               <small class="text-muted">Tenant</small>
-                              <p class="mb-0"><strong>{{ $booking->user->first_name }} {{ $booking->user->last_name }}</strong></p>
-                              <small>{{ $booking->user->email }}</small>
+                              <div class="d-flex align-items-center gap-2 mt-1">
+                                <img src="{{ $booking->user->profile_picture ? asset($booking->user->profile_picture) : asset('assets/img/avatars/1.png') }}" 
+                                    alt="Tenant Avatar" 
+                                    class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                  <p class="mb-0"><strong>{{ $booking->user->first_name }} {{ $booking->user->last_name }}</strong></p>
+                                  <small>{{ $booking->user->email }}</small>
+                                </div>
+                              </div>
                             </div>
                             <div class="col-6">
                               <small class="text-muted">Status</small>
@@ -363,6 +374,29 @@
                                     <span class="badge bg-danger">Cancelled</span>
                                     @break
                                 @endswitch
+                              </p>
+                            </div>
+                          </div>
+
+                          <div class="row mb-3">
+                            <div class="col-6">
+                              <small class="text-muted">Contact Number</small>
+                              <p class="mb-0">
+                                @if($booking->user->contact_number)
+                                  <i class='bx bx-phone me-1'></i>{{ $booking->user->contact_number }}
+                                @else
+                                  <span class="text-muted">Not provided</span>
+                                @endif
+                              </p>
+                            </div>
+                            <div class="col-6">
+                              <small class="text-muted">Guardian Number</small>
+                              <p class="mb-0">
+                                @if($booking->user->guardian_number)
+                                  <i class='bx bx-phone me-1'></i>{{ $booking->user->guardian_number }}
+                                @else
+                                  <span class="text-muted">Not provided</span>
+                                @endif
                               </p>
                             </div>
                           </div>
@@ -413,15 +447,23 @@
                             <hr>
                             <div class="mb-3">
                               <small class="text-muted">Landlord</small>
-                              <p class="mb-0"><strong>{{ $booking->property->landlord->user->first_name }} {{ $booking->property->landlord->user->last_name }}</strong></p>
-                              <small>{{ $booking->property->landlord->user->email }}</small><br>
-                              <small>{{ $booking->property->landlord->user->contact_number ?? 'No contact number' }}</small>
+                              <div class="d-flex align-items-center gap-2 mt-1">
+                                <img src="{{ $booking->property->landlord->user->profile_picture ? asset($booking->property->landlord->user->profile_picture) : asset('assets/img/avatars/1.png') }}" 
+                                    alt="Landlord Avatar" 
+                                    class="rounded-circle" 
+                                    style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                  <p class="mb-0"><strong>{{ $booking->property->landlord->user->first_name }} {{ $booking->property->landlord->user->last_name }}</strong></p>
+                                  <small>{{ $booking->property->landlord->user->email }}</small><br>
+                                  <small>{{ $booking->property->landlord->user->contact_number ?? 'No contact number' }}</small>
+                                </div>
+                              </div>
                             </div>
                           @endif
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                          <a href="{{ route('properties.show', $booking->property->id) }}" class="btn btn-primary" target="_blank">
+                          <a href="{{ route('properties.view', $booking->property->id) }}" class="btn btn-primary" target="_blank">
                             View Property
                           </a>
                         </div>
@@ -434,33 +476,32 @@
           </div>
 
           <!-- Pagination -->
-         <!-- ✅ Fixed Pagination Styling -->
-<div class="mt-4 d-flex justify-content-center">
-  <ul class="pagination pagination-sm mb-0 shadow-sm rounded">
-    {{-- Previous Page Link --}}
-    @if ($bookings->onFirstPage())
-      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-    @else
-      <li class="page-item"><a class="page-link" href="{{ $bookings->previousPageUrl() }}" rel="prev">&laquo;</a></li>
-    @endif
+          <div class="mt-4 d-flex justify-content-center">
+            <ul class="pagination pagination-sm mb-0 shadow-sm rounded">
+              {{-- Previous Page Link --}}
+              @if ($bookings->onFirstPage())
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+              @else
+                <li class="page-item"><a class="page-link" href="{{ $bookings->previousPageUrl() }}" rel="prev">&laquo;</a></li>
+              @endif
 
-    {{-- Pagination Elements --}}
-    @foreach ($bookings->links()->elements[0] ?? [] as $page => $url)
-      @if ($page == $bookings->currentPage())
-        <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
-      @else
-        <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
-      @endif
-    @endforeach
+              {{-- Pagination Elements --}}
+              @foreach ($bookings->links()->elements[0] ?? [] as $page => $url)
+                @if ($page == $bookings->currentPage())
+                  <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
+                @else
+                  <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+              @endforeach
 
-    {{-- Next Page Link --}}
-    @if ($bookings->hasMorePages())
-      <li class="page-item"><a class="page-link" href="{{ $bookings->nextPageUrl() }}" rel="next">&raquo;</a></li>
-    @else
-      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-    @endif
-  </ul>
-</div>
+              {{-- Next Page Link --}}
+              @if ($bookings->hasMorePages())
+                <li class="page-item"><a class="page-link" href="{{ $bookings->nextPageUrl() }}" rel="next">&raquo;</a></li>
+              @else
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+              @endif
+            </ul>
+          </div>
 
         @else
           <div class="text-center py-5">

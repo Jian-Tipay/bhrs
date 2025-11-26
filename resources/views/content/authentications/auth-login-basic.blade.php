@@ -145,7 +145,7 @@
             <h4 class="fw-bold text-primary">Sign in to StaySmart</h4>
           </div>
 
-          {{-- Display incorrect credentials message --}}
+          {{-- Display error messages --}}
           @if ($errors->any())
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
               {{ $errors->first() }}
@@ -158,12 +158,15 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
             z-index: 9999;
             justify-content: center;
             align-items: center;">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
+            <div class="text-center">
+              <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3 text-muted">Verifying your login...</p>
             </div>
           </div>
 
@@ -196,7 +199,7 @@
             </div>
 
             <div class="d-grid">
-              <button class="btn btn-primary rounded-pill fw-semibold" type="submit">
+              <button class="btn btn-primary rounded-pill fw-semibold" type="submit" id="submitBtn">
                 Sign In
               </button>
             </div>
@@ -212,6 +215,13 @@
           <p class="text-center text-muted small mt-4">
             © {{ date('Y') }} SLSU StaySmart — Smart Boarding House Recommender for SLSU Students
           </p>
+
+          <!-- reCAPTCHA Badge Notice -->
+          <p class="text-center text-muted small mt-2" style="font-size: 0.75rem;">
+            This site is protected by reCAPTCHA and the Google
+            <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
+            <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
+          </p>
         </div>
       </div>
     </div>
@@ -220,10 +230,48 @@
 @endsection
 
 @section('page-script')
+<!-- Load reCAPTCHA v3 (Invisible) -->
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+
 <script>
-  // Show loading overlay on form submit
-  document.getElementById('formAuthentication').addEventListener('submit', function() {
-      document.getElementById('loading-overlay').style.display = 'flex';
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formAuthentication');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing In...';
+      
+      // Show loading overlay
+      loadingOverlay.style.display = 'flex';
+      
+      // Execute reCAPTCHA v3
+      grecaptcha.ready(function() {
+        grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'login'})
+          .then(function(token) {
+            // Add token to form
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'g-recaptcha-response';
+            input.value = token;
+            form.appendChild(input);
+            
+            // Submit form
+            form.submit();
+          })
+          .catch(function(error) {
+            console.error('reCAPTCHA error:', error);
+            loadingOverlay.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Sign In';
+            alert('Security verification failed. Please refresh and try again.');
+          });
+      });
+    });
   });
 </script>
 @endsection

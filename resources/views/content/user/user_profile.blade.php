@@ -88,11 +88,21 @@
             @endif
 
             @if(Auth::user()->year_level)
-            <div class="d-flex align-items-center p-3 bg-label-warning rounded">
+            <div class="d-flex align-items-center mb-3 p-3 bg-label-warning rounded">
               <i class='bx bx-graduation fs-4 me-3 text-warning'></i>
               <div>
                 <small class="text-muted d-block">Year Level</small>
                 <strong>{{ Auth::user()->year_level }}</strong>
+              </div>
+            </div>
+            @endif
+
+            @if(Auth::user()->guardian_number)
+            <div class="d-flex align-items-center p-3 bg-label-secondary rounded">
+              <i class='bx bx-phone-call fs-4 me-3 text-secondary'></i>
+              <div>
+                <small class="text-muted d-block">Guardian Contact</small>
+                <strong>{{ Auth::user()->guardian_number }}</strong>
               </div>
             </div>
             @endif
@@ -194,6 +204,16 @@
                 </label>
                 <input type="text" class="form-control form-control-lg" id="contact_number" name="contact_number" 
                        value="{{ Auth::user()->contact_number }}" disabled 
+                       placeholder="09XX XXX XXXX">
+              </div>
+
+              <!-- Guardian Contact Number -->
+              <div class="col-md-6 mb-4">
+                <label for="guardian_number" class="form-label fw-semibold">
+                  <i class='bx bx-phone-call me-1'></i>Guardian Contact Number
+                </label>
+                <input type="text" class="form-control form-control-lg" id="guardian_number" name="guardian_number" 
+                       value="{{ Auth::user()->guardian_number }}" disabled 
                        placeholder="09XX XXX XXXX">
               </div>
 
@@ -372,14 +392,16 @@
 .bg-label-primary,
 .bg-label-info,
 .bg-label-success,
-.bg-label-warning {
+.bg-label-warning,
+.bg-label-secondary {
   transition: all 0.3s;
 }
 
 .bg-label-primary:hover,
 .bg-label-info:hover,
 .bg-label-success:hover,
-.bg-label-warning:hover {
+.bg-label-warning:hover,
+.bg-label-secondary:hover {
   transform: translateX(5px);
 }
 
@@ -400,13 +422,14 @@
   const saveBtn = document.getElementById('saveBtn');
   const cancelBtn = document.getElementById('cancelBtn');
   const profileForm = document.getElementById('profileForm');
-  const inputs = profileForm.querySelectorAll('input, select');
+  const inputs = profileForm.querySelectorAll('input:not([type="file"]), select');
+  const fileInput = document.getElementById('profile_picture');
   const loadingOverlay = document.getElementById('loading-overlay');
   const uploadLabel = document.getElementById('uploadLabel');
 
   let originalValues = {};
 
-  // Store original values
+  // Store original values (exclude file input and studID)
   inputs.forEach(input => {
     if(input.id !== 'studID') {
       originalValues[input.id] = input.value;
@@ -420,6 +443,9 @@
         input.removeAttribute('disabled');
       }
     });
+    
+    // Enable file input
+    fileInput.removeAttribute('disabled');
     
     saveBtn.classList.remove('d-none');
     cancelBtn.classList.remove('d-none');
@@ -437,6 +463,10 @@
       }
     });
 
+    // Disable file input and clear it
+    fileInput.setAttribute('disabled', 'disabled');
+    fileInput.value = '';
+
     // Reset profile picture preview
     const currentPic = "{{ Auth::user()->profile_picture ? asset(Auth::user()->profile_picture) : asset('assets/img/avatars/1.png') }}";
     document.getElementById('profilePreview').src = currentPic;
@@ -449,9 +479,10 @@
   });
 
   // Preview selected profile picture
-  document.getElementById('profile_picture').addEventListener('change', function(e){
+  fileInput.addEventListener('change', function(e){
     const [file] = this.files;
     if(file){
+      console.log('File selected:', file.name, file.size, file.type);
       const objectUrl = URL.createObjectURL(file);
       document.getElementById('profilePreview').src = objectUrl;
       document.getElementById('profilePreviewHeader').src = objectUrl;
@@ -459,7 +490,8 @@
   });
 
   // Show full-page loading overlay on form submit
-  profileForm.addEventListener('submit', () => {
+  profileForm.addEventListener('submit', (e) => {
+    console.log('Form submitting...');
     loadingOverlay.style.display = 'flex';
   });
 

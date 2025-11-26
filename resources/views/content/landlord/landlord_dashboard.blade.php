@@ -260,7 +260,7 @@
             </a>
           </div>
           <div class="col-md-3">
-            <a href="{{ route('landlord.properties.show') }}" class="btn btn-info w-100 quick-action-btn">
+            <a href="{{ route('landlord.properties.index') }}" class="btn btn-info w-100 quick-action-btn">
               <i class='bx bx-list-ul me-2'></i>
               Manage Properties
             </a>
@@ -369,7 +369,7 @@
                       Actions
                     </button>
                     <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{{ route('landlord.bookings.show', $booking->booking_id) }}">
+                      <li><a class="dropdown-item" href="{{ route('landlord.bookings.index', $booking->booking_id) }}">
                         <i class='bx bx-show me-1'></i> View Details
                       </a></li>
                       @if($booking->status == 'Pending')
@@ -491,7 +491,7 @@
                    <a href="{{ route('landlord.properties.edit', $property->id) }}" class="btn btn-sm btn-primary">Edit</a>
                       <i class='bx bx-edit'></i> Edit
                     </a>
-                    <a href="{{ route('landlord.properties.show', $property->id) }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('landlord.properties.index', $property->id) }}" class="btn btn-sm btn-outline-primary">
                       <i class='bx bx-show'></i> View
                     </a>
                   </div>

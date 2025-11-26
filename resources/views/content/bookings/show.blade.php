@@ -118,7 +118,7 @@
               </p>
               @endif
 
-              <a href="{{ route('properties.show', $booking->property->id) }}" 
+              <a href="{{ route('properties.view', $booking->property->id) }}" 
                  class="btn btn-sm btn-outline-primary mt-2">
                 <i class='bx bx-show'></i> View Full Property Details
               </a>
@@ -229,7 +229,7 @@
               <i class='bx bx-x-circle'></i> Cancel Booking
             </button>
 
-            <a href="{{ route('properties.show', $booking->property->id) }}" 
+            <a href="{{ route('properties.view', $booking->property->id) }}" 
                class="btn btn-outline-secondary">
               <i class='bx bx-building'></i> View Property
             </a>
@@ -266,7 +266,7 @@
         <div class="card-body">
           <h6 class="mb-3">Leave a Review</h6>
           <p class="small text-muted">Help other students by sharing your experience!</p>
-          <a href="{{ route('properties.show', $booking->property->id) }}#reviews" 
+          <a href="{{ route('properties.view', $booking->property->id) }}#reviews" 
              class="btn btn-warning btn-sm w-100">
             <i class='bx bx-star'></i> Rate Property
           </a>

@@ -33,8 +33,12 @@
           <span class="menu-header-text">{{ __($menu->menuHeader) }}</span>
         </li>
       @else
-        {{-- Active Menu Logic --}}
+        {{-- Check if item requires verification --}}
         @php
+          $requiresVerification = isset($menu->requiresVerification) && $menu->requiresVerification;
+          $isUnverified = auth()->check() && auth()->user()->role === 'user' && !auth()->user()->hasVerifiedEmail();
+          $isLocked = $isUnverified && $requiresVerification;
+          
           $activeClass = null;
           $currentRouteName = Route::currentRouteName();
 
@@ -56,25 +60,52 @@
         @endphp
 
         {{-- Main Menu Item --}}
-        <li class="menu-item {{ $activeClass }}">
-          <a href="{{ isset($menu->url) ? url($menu->url) : 'javascript:void(0);' }}" 
-             class="{{ isset($menu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}" 
-             @if (isset($menu->target) && !empty($menu->target)) target="_blank" @endif>
-            @isset($menu->icon)
-              <i class="{{ $menu->icon }}"></i>
-            @endisset
-            <div>{{ isset($menu->name) ? __($menu->name) : '' }}</div>
-            @isset($menu->badge)
-              <div class="badge bg-{{ $menu->badge[0] }} rounded-pill ms-auto">{{ $menu->badge[1] }}</div>
-            @endisset
-          </a>
+        <li class="menu-item {{ $activeClass }} {{ $isLocked ? 'disabled' : '' }}">
+          @if($isLocked)
+            {{-- Locked menu item redirects to verification page --}}
+            <a href="{{ route('verification.notice') }}" 
+               class="menu-link" 
+               title="Email verification required">
+              @isset($menu->icon)
+                <i class="{{ $menu->icon }}"></i>
+              @endisset
+              <div>{{ isset($menu->name) ? __($menu->name) : '' }}</div>
+              <span class="badge badge-center rounded-pill bg-warning ms-auto" style="width: 20px; height: 20px;">
+                <i class='bx bx-lock-alt' style="font-size: 12px;"></i>
+              </span>
+            </a>
+          @else
+            {{-- Normal accessible menu item --}}
+            <a href="{{ isset($menu->url) ? url($menu->url) : 'javascript:void(0);' }}" 
+               class="{{ isset($menu->submenu) ? 'menu-link menu-toggle' : 'menu-link' }}" 
+               @if (isset($menu->target) && !empty($menu->target)) target="_blank" @endif>
+              @isset($menu->icon)
+                <i class="{{ $menu->icon }}"></i>
+              @endisset
+              <div>{{ isset($menu->name) ? __($menu->name) : '' }}</div>
+              @isset($menu->badge)
+                <div class="badge bg-{{ $menu->badge[0] }} rounded-pill ms-auto">{{ $menu->badge[1] }}</div>
+              @endisset
+            </a>
 
-          {{-- Submenu --}}
-          @isset($menu->submenu)
-            @include('layouts.sections.menu.submenu', ['menu' => $menu->submenu])
-          @endisset
+            {{-- Submenu --}}
+            @isset($menu->submenu)
+              @include('layouts.sections.menu.submenu', ['menu' => $menu->submenu])
+            @endisset
+          @endif
         </li>
       @endif
     @endforeach
   </ul>
 </aside>
+
+<style>
+  /* Optional: Style for locked menu items */
+  .menu-item.disabled .menu-link {
+    opacity: 0.6;
+    cursor: pointer;
+  }
+  .menu-item.disabled .menu-link:hover {
+    background-color: rgba(255, 193, 7, 0.08);
+  }
+</style>

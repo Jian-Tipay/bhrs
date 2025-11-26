@@ -2,94 +2,82 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\CustomVerifyEmail; 
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'users';
-    protected $primaryKey = 'id';
-
-    protected $fillable = [
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+   protected $fillable = [
         'name',
-        'studID',
+        'first_name',
+        'last_name',
         'email',
         'password',
         'role',
-        'profile_picture',
-        // Additional student fields
+        'studID',
         'student_number',
-        'first_name',
-        'last_name',
+        'contact_number',
+        'address', // Added this field
         'program',
         'year_level',
         'gender',
-        'contact_number',
+        'guardian_number',
+        'profile_picture',
         'approval_status',
         'approved_by',
         'approved_at',
         'rejection_reason',
+        'email_verified_at',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'email_verified_at' => 'datetime',
         'approved_at' => 'datetime',
+        'password' => 'hashed',
     ];
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class, 'user_id');
-    }
-    public function unreadNotificationsCount()
-    {
-        return $this->notifications()->where('is_read', false)->count();
-    }
-    public function approvedBy()
-    {
-        return $this->belongsTo(User::class, 'approved_by');
-    }
-    public function approvedUsers()
-    {
-        return $this->hasMany(User::class, 'approved_by');
-    }
-    public function scopePendingApproval($query)
-    {
-        return $query->where('approval_status', 'pending');
-    }
-    public function scopeApproved($query)
-    {
-        return $query->where('approval_status', 'approved');
-    }
-        public function isApproved()
-    {
-        return $this->approval_status === 'approved';
-    }
 
     /**
-     * Check if user is pending approval
+     * Override to send verification email only for tenants
      */
-    public function isPending()
+       public function sendEmailVerificationNotification()
     {
-        return $this->approval_status === 'pending';
+        $this->notify(new CustomVerifyEmail);
     }
+
 
     /**
-     * Check if user is rejected
+     * Check if user should verify email (only tenants)
      */
-    public function isRejected()
+    public function shouldVerifyEmail()
     {
-        return $this->approval_status === 'rejected';
+        return $this->role === 'user' && !$this->hasVerifiedEmail();
     }
-
-
 
     // Relationships
     public function landlord()
@@ -97,57 +85,43 @@ class User extends Authenticatable
         return $this->hasOne(Landlord::class);
     }
 
-    public function ratings()
+    public function properties()
     {
-        return $this->hasMany(Rating::class, 'user_id', 'id');
+        return $this->hasManyThrough(Property::class, Landlord::class);
     }
 
     public function bookings()
     {
-        return $this->hasMany(Booking::class, 'user_id', 'id');
+        return $this->hasMany(Booking::class);
     }
 
-    public function preferences()
+    public function ratings()
     {
-        return $this->hasOne(StudentPreference::class, 'user_id', 'id');
+        return $this->hasMany(Rating::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    // Helper Methods
+    public function unreadNotificationsCount()
+    {
+        return $this->notifications()->where('is_read', false)->count();
+    }
     public function views()
     {
-        return $this->hasMany(PropertyView::class, 'user_id', 'id');
+        return $this->hasMany(PropertyView::class);
     }
 
-    public function recommendationLogs()
-    {
-        return $this->hasMany(RecommendationLog::class, 'user_id', 'id');
-    }
+    // Helper Methods
 
-    // Scopes
-    public function scopeStudents($query)
-    {
-        return $query->where('role', 'user');
-    }
-
-    public function scopeLandlords($query)
-    {
-        return $query->where('role', 'landlord');
-    }
-
-    public function scopeAdmins($query)
-    {
-        return $query->where('role', 'admin');
-    }
-
-    // Accessors
-    public function getFullNameAttribute()
-    {
-        if ($this->first_name && $this->last_name) {
-            return "{$this->first_name} {$this->last_name}";
-        }
-        return $this->name;
-    }
-
-    // Check if user is a specific role
     public function isAdmin()
     {
         return $this->role === 'admin';
@@ -158,20 +132,18 @@ class User extends Authenticatable
         return $this->role === 'landlord';
     }
 
-    public function isStudent()
+    public function isTenant()
     {
         return $this->role === 'user';
     }
 
-    // Check if student has rated a property
-    public function hasRated($propertyId)
+    public function isApproved()
     {
-        return $this->ratings()->where('property_id', $propertyId)->exists();
+        return $this->approval_status === 'approved';
     }
 
-    // Get user's rating for a specific property
-    public function getRatingFor($propertyId)
+    public function isPending()
     {
-        return $this->ratings()->where('property_id', $propertyId)->first();
+        return $this->approval_status === 'pending';
     }
 }

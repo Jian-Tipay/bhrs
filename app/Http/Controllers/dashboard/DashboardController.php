@@ -156,9 +156,13 @@ class DashboardController extends Controller
             'amenities'
         ));
     }
+
     public function user(Request $request)
     {
         $user = Auth::user();
+        
+      
+
         $userId = $user->id;
 
         // Get user preference
@@ -335,7 +339,7 @@ class DashboardController extends Controller
 
             // FIX: Apply search filter correctly
             if ($request->filled('query')) {
-                $searchTerm = $request->input('query'); // Changed from $request->query
+                $searchTerm = $request->input('query');
                 $query->where(function($q) use ($searchTerm) {
                     $q->where('title', 'like', "%{$searchTerm}%")
                       ->orWhere('address', 'like', "%{$searchTerm}%");

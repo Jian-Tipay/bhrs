@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class RecommendationController extends Controller
 {
     protected $cfService;
-    protected $pythonApiUrl = 'http://127.0.0.1:8001/recommendations';
+    protected $pythonApiUrl = 'https://bhrs-slsu.onrender.com/recommendations';
 
     public function __construct(CollaborativeFilteringService $cfService)
     {

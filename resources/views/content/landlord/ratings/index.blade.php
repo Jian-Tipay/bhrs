@@ -122,8 +122,8 @@
             <div class="d-flex justify-content-between align-items-start mb-2">
               <div class="d-flex align-items-center">
                 <div class="avatar avatar-sm me-2">
-                  @if($review->user->profile_picture)
-                    <img src="{{ asset('storage/' . $review->user->profile_picture) }}" alt="Avatar" class="rounded-circle">
+                  @if($review->user && $review->user->profile_picture)
+                    <img src="{{ asset($review->user->profile_picture) }}" alt="Avatar" class="rounded-circle">
                   @else
                     <span class="avatar-initial rounded-circle bg-label-primary">
                       {{ substr($review->user->name ?? 'U', 0, 1) }}
@@ -158,7 +158,16 @@
             @if($review->landlord_reply)
               <div class="ms-4 mt-2 p-2 bg-light rounded">
                 <small class="text-muted d-block mb-1">
-                  <i class='bx bx-reply'></i> Your Reply • {{ $review->replied_at ? $review->replied_at->diffForHumans() : '' }}
+                  <i class='bx bx-reply'></i> Your Reply
+                  @if($review->replied_at)
+                    @php
+                      // Handle both Carbon instances and strings
+                      $repliedDate = $review->replied_at instanceof \Carbon\Carbon 
+                        ? $review->replied_at 
+                        : \Carbon\Carbon::parse($review->replied_at);
+                    @endphp
+                    • {{ $repliedDate->diffForHumans() }}
+                  @endif
                 </small>
                 <p class="mb-0">{{ $review->landlord_reply }}</p>
               </div>

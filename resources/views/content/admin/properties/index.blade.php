@@ -220,7 +220,7 @@
                           <i class='bx bx-dots-vertical-rounded'></i>
                         </button>
                         <div class="dropdown-menu">
-                          <a class="dropdown-item" href="{{ route('properties.show', $property->id) }}" target="_blank">
+                          <a class="dropdown-item" href="{{ route('properties.view', $property->id) }}" target="_blank">
                             <i class='bx bx-show me-1'></i> View Property
                           </a>
                           @if(!$property->is_active)

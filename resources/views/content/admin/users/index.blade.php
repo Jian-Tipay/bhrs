@@ -93,7 +93,7 @@
                      placeholder="Search by name or email..." 
                      value="{{ request('search') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label class="form-label">Filter by Role</label>
               <select class="form-select" name="role">
                 <option value="">All Roles</option>
@@ -102,7 +102,16 @@
                 <option value="user" {{ request('role') === 'user' ? 'selected' : '' }}>Tenant</option>
               </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+              <label class="form-label">Approval Status</label>
+              <select class="form-select" name="approval_status">
+                <option value="">All Status</option>
+                <option value="pending" {{ request('approval_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="approved" {{ request('approval_status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                <option value="rejected" {{ request('approval_status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+              </select>
+            </div>
+            <div class="col-md-2">
               <label class="form-label">Sort By</label>
               <select class="form-select" name="sort">
                 <option value="newest" {{ request('sort') === 'newest' ? 'selected' : '' }}>Newest First</option>
@@ -151,7 +160,10 @@
                     <div class="d-flex align-items-center">
                       <div class="avatar avatar-sm me-2">
                         @if($user->profile_picture)
-                          <img src="{{ asset('storage/' . $user->profile_picture) }}" alt="{{ $user->first_name }}" class="rounded-circle">
+                          <img src="{{ asset($user->profile_picture) }}" 
+                               alt="{{ $user->first_name ?? $user->name }}" 
+                               class="rounded-circle"
+                               style="width: 38px; height: 38px; object-fit: cover;">
                         @else
                           <span class="avatar-initial rounded-circle bg-label-{{ $user->role === 'landlord' ? 'info' : ($user->role === 'admin' ? 'danger' : 'primary') }}">
                             {{ strtoupper(substr($user->first_name ?? $user->name, 0, 1)) }}
@@ -194,7 +206,15 @@
                     <small class="text-muted">{{ $user->created_at->diffForHumans() }}</small>
                   </td>
                   <td>
-                    <span class="badge bg-success">Active</span>
+                    @if($user->approval_status === 'approved')
+                      <span class="badge bg-success">Approved</span>
+                    @elseif($user->approval_status === 'pending')
+                      <span class="badge bg-warning">Pending</span>
+                    @elseif($user->approval_status === 'rejected')
+                      <span class="badge bg-danger">Rejected</span>
+                    @else
+                      <span class="badge bg-secondary">Unknown</span>
+                    @endif
                   </td>
                   <td>
                     <div class="dropdown">
@@ -205,9 +225,20 @@
                         <a class="dropdown-item" href="{{ route('admin.users.view', $user->id) }}">
                           <i class='bx bx-show me-1'></i> View Details
                         </a>
-                        <a class="dropdown-item" href="javascript:void(0);" onclick="editUser({{ $user->id }})">
+                        <a class="dropdown-item" href="{{ route('admin.users.edit', $user->id) }}">
                           <i class='bx bx-edit me-1'></i> Edit
                         </a>
+                        
+                        @if($user->approval_status === 'pending')
+                          <div class="dropdown-divider"></div>
+                          <a class="dropdown-item text-success" href="javascript:void(0);" onclick="approveUser({{ $user->id }})">
+                            <i class='bx bx-check-circle me-1'></i> Approve
+                          </a>
+                          <a class="dropdown-item text-warning" href="javascript:void(0);" onclick="showRejectModal({{ $user->id }}, '{{ $user->first_name ?? $user->name }}')">
+                            <i class='bx bx-x-circle me-1'></i> Reject
+                          </a>
+                        @endif
+                        
                         @if($user->id !== Auth::id())
                           <div class="dropdown-divider"></div>
                           <a class="dropdown-item text-danger" href="javascript:void(0);" onclick="deleteUser({{ $user->id }})">
@@ -231,37 +262,63 @@
         </div>
 
         <!-- Pagination -->
-      <div class="mt-4 d-flex justify-content-center">
-  <ul class="pagination pagination-sm mb-0 shadow-sm rounded">
-    {{-- Previous Page Link --}}
-    @if ($users->onFirstPage())
-      <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-    @else
-      <li class="page-item"><a class="page-link" href="{{ $users->previousPageUrl() }}" rel="prev">&laquo;</a></li>
-    @endif
+        <div class="mt-4 d-flex justify-content-center">
+          <ul class="pagination pagination-sm mb-0 shadow-sm rounded">
+            {{-- Previous Page Link --}}
+            @if ($users->onFirstPage())
+              <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            @else
+              <li class="page-item"><a class="page-link" href="{{ $users->previousPageUrl() }}" rel="prev">&laquo;</a></li>
+            @endif
 
-    {{-- Pagination Elements --}}
-    @foreach ($users->links()->elements[0] ?? [] as $page => $url)
-      @if ($page == $users->currentPage())
-        <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
-      @else
-        <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
-      @endif
-    @endforeach
+            {{-- Pagination Elements --}}
+            @foreach ($users->links()->elements[0] ?? [] as $page => $url)
+              @if ($page == $users->currentPage())
+                <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
+              @else
+                <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
+              @endif
+            @endforeach
 
-    {{-- Next Page Link --}}
-    @if ($users->hasMorePages())
-      <li class="page-item"><a class="page-link" href="{{ $users->nextPageUrl() }}" rel="next">&raquo;</a></li>
-    @else
-      <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-    @endif
-  </ul>
-</div>
+            {{-- Next Page Link --}}
+            @if ($users->hasMorePages())
+              <li class="page-item"><a class="page-link" href="{{ $users->nextPageUrl() }}" rel="next">&raquo;</a></li>
+            @else
+              <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            @endif
+          </ul>
+        </div>
 
       </div>
     </div>
   </div>
 
+</div>
+
+<!-- Reject User Modal -->
+<div class="modal fade" id="rejectUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Reject User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="rejectUserForm" method="POST">
+        @csrf
+        <div class="modal-body">
+          <p>You are about to reject the user: <strong id="rejectUserName"></strong></p>
+          <div class="mb-3">
+            <label class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+            <textarea class="form-control" name="rejection_reason" rows="4" required placeholder="Please provide a reason for rejection..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Reject User</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Add User Modal -->
@@ -328,21 +385,43 @@
 
 @section('page-script')
 <script>
-function deleteUser(userId) {
-  if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-    // Create a form and submit it
+function approveUser(userId) {
+  if (confirm('Are you sure you want to approve this user?')) {
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `/admin/users/${userId}`;
+    form.action = `/admin/users/${userId}/approve`;
     
-    // Add CSRF token
     const csrfToken = document.createElement('input');
     csrfToken.type = 'hidden';
     csrfToken.name = '_token';
     csrfToken.value = '{{ csrf_token() }}';
     form.appendChild(csrfToken);
     
-    // Add DELETE method
+    document.body.appendChild(form);
+    form.submit();
+  }
+}
+
+function showRejectModal(userId, userName) {
+  document.getElementById('rejectUserName').textContent = userName;
+  document.getElementById('rejectUserForm').action = `/admin/users/${userId}/reject`;
+  
+  const modal = new bootstrap.Modal(document.getElementById('rejectUserModal'));
+  modal.show();
+}
+
+function deleteUser(userId) {
+  if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/users/${userId}`;
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    form.appendChild(csrfToken);
+    
     const methodInput = document.createElement('input');
     methodInput.type = 'hidden';
     methodInput.name = '_method';
@@ -352,10 +431,6 @@ function deleteUser(userId) {
     document.body.appendChild(form);
     form.submit();
   }
-}
-
-function editUser(userId) {
-  window.location.href = `/admin/users/${userId}/edit`;
 }
 </script>
 @endsection

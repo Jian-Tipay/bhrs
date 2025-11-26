@@ -1,6 +1,6 @@
 @extends('layouts/contentNavbarLayout')
 
-@section('title', 'User Details')
+@section('title', 'View User - ' . ($user->first_name ?? $user->name))
 
 @section('content')
 <div class="row">
@@ -13,26 +13,33 @@
   </div>
 
   <!-- User Profile Card -->
-  <div class="col-lg-4 mb-4">
-    <div class="card h-100">
+  <!-- User Profile Card -->
+  <div class="col-lg-4 col-md-5 mb-4">
+    <div class="card">
       <div class="card-body text-center">
-        <div class="mb-3">
+        <div class="mb-4 mt-3">
           @if($user->profile_picture)
-            <img src="{{ asset('storage/' . $user->profile_picture) }}" 
-                 alt="{{ $user->first_name }}" 
+            <img src="{{ $user->profile_picture ? asset($user->profile_picture) : asset('assets/img/avatars/1.png') }}" 
                  class="rounded-circle" 
-                 style="width: 120px; height: 120px; object-fit: cover;">
+                 width="120" 
+                 height="120"
+                 style="object-fit: cover;">
           @else
-            <div class="avatar avatar-xl mx-auto">
+            <div class="d-flex justify-content-center align-items-center" style="height: 120px;">
               <span class="avatar-initial rounded-circle bg-label-{{ $user->role === 'landlord' ? 'info' : ($user->role === 'admin' ? 'danger' : 'primary') }}" 
-                    style="font-size: 3rem;">
+                    style="width: 120px; height: 120px; font-size: 48px; display: flex; align-items: center; justify-content: center;">
                 {{ strtoupper(substr($user->first_name ?? $user->name, 0, 1)) }}
               </span>
             </div>
           @endif
         </div>
-        <h4 class="mb-1">{{ $user->first_name ?? $user->name }} {{ $user->last_name ?? '' }}</h4>
-        <p class="text-muted mb-3">{{ $user->email }}</p>
+
+        <h4 class="mb-1">
+          {{ $user->first_name ?? 'N/A' }}
+          @if($user->last_name)
+            {{ $user->last_name }}
+          @endif
+        </h4>
         
         @switch($user->role)
           @case('admin')
@@ -46,95 +53,347 @@
             @break
         @endswitch
 
-        <div class="d-flex justify-content-around my-4">
-          <div>
-            <h5 class="mb-0">{{ $bookingsCount }}</h5>
-            <small class="text-muted">Bookings</small>
-          </div>
-          <div>
-            <h5 class="mb-0">{{ $ratingsCount }}</h5>
-            <small class="text-muted">Reviews</small>
-          </div>
-          @if($user->role === 'landlord' && $properties->count() > 0)
-            <div>
-              <h5 class="mb-0">{{ $properties->count() }}</h5>
-              <small class="text-muted">Properties</small>
-            </div>
+        <div class="d-flex justify-content-center gap-2 mb-3">
+          @if($user->approval_status === 'approved')
+            <span class="badge bg-success">
+              <i class='bx bx-check-circle'></i> Approved
+            </span>
+          @elseif($user->approval_status === 'pending')
+            <span class="badge bg-warning">
+              <i class='bx bx-time'></i> Pending
+            </span>
+          @elseif($user->approval_status === 'rejected')
+            <span class="badge bg-danger">
+              <i class='bx bx-x-circle'></i> Rejected
+            </span>
           @endif
         </div>
 
-        <div class="d-flex gap-2 justify-content-center">
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal">
-            <i class='bx bx-edit me-1'></i> Edit
-          </button>
+        <div class="d-grid gap-2">
+          <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary">
+            <i class='bx bx-edit me-1'></i> Edit User
+          </a>
           @if($user->id !== Auth::id())
-            <button type="button" class="btn btn-danger" onclick="deleteUser({{ $user->id }})">
-              <i class='bx bx-trash me-1'></i> Delete
+            <button type="button" class="btn btn-outline-danger" onclick="deleteUser({{ $user->id }})">
+              <i class='bx bx-trash me-1'></i> Delete User
             </button>
           @endif
         </div>
       </div>
     </div>
+
+    <!-- Quick Stats -->
+    <div class="card mt-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Quick Statistics</h5>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <i class='bx bx-calendar-check text-primary'></i>
+            <span class="ms-2">Bookings</span>
+          </div>
+          <span class="badge bg-label-primary">{{ $bookingsCount }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <i class='bx bx-star text-warning'></i>
+            <span class="ms-2">Reviews Given</span>
+          </div>
+          <span class="badge bg-label-warning">{{ $ratingsCount }}</span>
+        </div>
+        @if($user->role === 'landlord')
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <i class='bx bx-building-house text-info'></i>
+              <span class="ms-2">Properties</span>
+            </div>
+            <span class="badge bg-label-info">{{ $properties->count() }}</span>
+          </div>
+        @endif
+      </div>
+    </div>
   </div>
 
-  <!-- User Information -->
-  <div class="col-lg-8 mb-4">
-    <div class="card h-100">
+  <!-- User Details -->
+  <div class="col-lg-8 col-md-7">
+    
+    <!-- Basic Information -->
+    <div class="card mb-4">
       <div class="card-header">
-        <h5 class="mb-0">User Information</h5>
+        <h5 class="mb-0">Basic Information</h5>
       </div>
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label text-muted">Full Name</label>
-            <p class="mb-0"><strong>{{ $user->first_name ?? $user->name }} {{ $user->last_name ?? '' }}</strong></p>
+            <label class="form-label text-muted small">FIRST NAME</label>
+            <p class="mb-0"><strong>{{ $user->first_name ?? 'N/A' }}</strong></p>
           </div>
           <div class="col-md-6">
-            <label class="form-label text-muted">Email Address</label>
-            <p class="mb-0"><strong>{{ $user->email }}</strong></p>
+            <label class="form-label text-muted small">LAST NAME</label>
+            <p class="mb-0">
+              @if($user->last_name)
+                <strong>{{ $user->last_name }}</strong>
+              @else
+                <span class="text-muted">N/A</span>
+              @endif
+            </p>
           </div>
           <div class="col-md-6">
-            <label class="form-label text-muted">Student Number</label>
-            <p class="mb-0"><strong>{{ $user->student_number ?? 'N/A' }}</strong></p>
+            <label class="form-label text-muted small">EMAIL ADDRESS</label>
+            <p class="mb-0">
+              <i class='bx bx-envelope me-1'></i>
+              <strong>{{ $user->email ?? 'N/A' }}</strong>
+            </p>
           </div>
           <div class="col-md-6">
-            <label class="form-label text-muted">Contact Number</label>
-            <p class="mb-0"><strong>{{ $user->contact_number ?? 'N/A' }}</strong></p>
+            <label class="form-label text-muted small">CONTACT NUMBER</label>
+            <p class="mb-0">
+              @if($user->contact_number)
+                <i class='bx bx-phone me-1'></i>
+                <strong>{{ $user->contact_number }}</strong>
+              @else
+                <span class="text-muted">N/A</span>
+              @endif
+            </p>
           </div>
-          @if($user->program)
-            <div class="col-md-6">
-              <label class="form-label">Program</label>
-              <input type="text" class="form-control" name="program" value="{{ $user->program }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Year Level</label>
-              <select class="form-select" name="year_level">
-                <option value="">Select Year Level</option>
-                <option value="1st Year" {{ $user->year_level === '1st Year' ? 'selected' : '' }}>1st Year</option>
-                <option value="2nd Year" {{ $user->year_level === '2nd Year' ? 'selected' : '' }}>2nd Year</option>
-                <option value="3rd Year" {{ $user->year_level === '3rd Year' ? 'selected' : '' }}>3rd Year</option>
-                <option value="4th Year" {{ $user->year_level === '4th Year' ? 'selected' : '' }}>4th Year</option>
-                <option value="Graduate" {{ $user->year_level === 'Graduate' ? 'selected' : '' }}>Graduate</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Gender</label>
-              <select class="form-select" name="gender">
-                <option value="">Select Gender</option>
-                <option value="Male" {{ $user->gender === 'Male' ? 'selected' : '' }}>Male</option>
-                <option value="Female" {{ $user->gender === 'Female' ? 'selected' : '' }}>Female</option>
-                <option value="Other" {{ $user->gender === 'Other' ? 'selected' : '' }}>Other</option>
-              </select>
-            </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small">GUARDIAN NUMBER</label>
+            <p class="mb-0">
+              @if($user->guardian_number)
+                <i class='bx bx-phone me-1'></i>
+                <strong>{{ $user->guardian_number }}</strong>
+              @else
+                <span class="text-muted">N/A</span>
+              @endif
+            </p>
           </div>
+          @if($user->student_number)
+            <div class="col-md-6">
+              <label class="form-label text-muted small">STUDENT NUMBER</label>
+              <p class="mb-0">
+                <i class='bx bx-id-card me-1'></i>
+                <strong>{{ $user->student_number }}</strong>
+              </p>
+            </div>
+          @endif
+          @if($user->program || $user->year_level)
+            @if($user->program)
+              <div class="col-md-6">
+                <label class="form-label text-muted small">PROGRAM</label>
+                <p class="mb-0"><strong>{{ $user->program }}</strong></p>
+              </div>
+            @endif
+            @if($user->year_level)
+              <div class="col-md-6">
+                <label class="form-label text-muted small">YEAR LEVEL</label>
+                <p class="mb-0"><strong>{{ $user->year_level }}</strong></p>
+              </div>
+            @endif
+          @endif
+          @if($user->gender)
+            <div class="col-md-6">
+              <label class="form-label text-muted small">GENDER</label>
+              <p class="mb-0"><strong>{{ $user->gender }}</strong></p>
+            </div>
+          @endif
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-        </div>
-      </form>
+      </div>
     </div>
+
+    <!-- Account Information -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Account Information</h5>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label text-muted small">ACCOUNT TYPE</label>
+            <p class="mb-0">
+              <strong>{{ ucfirst($user->role) }}</strong>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small">APPROVAL STATUS</label>
+            <p class="mb-0">
+              @if($user->approval_status === 'approved')
+                <span class="badge bg-success">APPROVED</span>
+              @elseif($user->approval_status === 'pending')
+                <span class="badge bg-warning">Pending</span>
+              @elseif($user->approval_status === 'rejected')
+                <span class="badge bg-danger">Rejected</span>
+              @endif
+            </p>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-muted small">JOINED DATE</label>
+            <p class="mb-0">
+              <i class='bx bx-calendar me-1'></i>
+              <strong>{{ $user->created_at->format('F d, Y') }}</strong>
+              <br>
+              <small class="text-muted">{{ $user->created_at->diffForHumans() }}</small>
+            </p>
+          </div>
+          @if($user->approved_at)
+            <div class="col-md-6">
+              <label class="form-label text-muted small">APPROVED DATE</label>
+              <p class="mb-0">
+                <i class='bx bx-check-circle me-1'></i>
+                <strong>{{ $user->approved_at->format('F d, Y') }}</strong>
+                <br>
+                <small class="text-muted">{{ $user->approved_at->diffForHumans() }}</small>
+              </p>
+            </div>
+          @endif
+          @if($user->approvedBy)
+            <div class="col-md-6">
+              <label class="form-label text-muted small">APPROVED BY</label>
+              <p class="mb-0">
+                <strong>{{ $user->approvedBy->first_name }} {{ $user->approvedBy->last_name }}</strong>
+              </p>
+            </div>
+          @endif
+          @if($user->rejection_reason)
+            <div class="col-12">
+              <label class="form-label text-muted small">REJECTION REASON</label>
+              <div class="alert alert-danger mb-0">
+                {{ $user->rejection_reason }}
+              </div>
+            </div>
+          @endif
+        </div>
+      </div>
+    </div>
+
+    <!-- Landlord Properties -->
+    @if($user->role === 'landlord' && $properties->count() > 0)
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Properties ({{ $properties->count() }})</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Address</th>
+                  <th>Price</th>
+                  <th>Bookings</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($properties as $property)
+                  <tr>
+                    <td>
+                      <strong>{{ $property->title }}</strong>
+                    </td>
+                    <td>{{ Str::limit($property->address, 30) }}</td>
+                    <td><strong>₱{{ number_format($property->price, 2) }}</strong></td>
+                    <td>
+                      <span class="badge bg-label-primary">{{ $property->bookings_count }}</span>
+                    </td>
+                    <td>
+                      @if($property->is_active)
+                        <span class="badge bg-success">Active</span>
+                      @else
+                        <span class="badge bg-secondary">Inactive</span>
+                      @endif
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    @endif
+
+    <!-- Recent Bookings -->
+    @if($user->bookings && $user->bookings->count() > 0)
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Bookings</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Move-in Date</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($user->bookings->take(5) as $booking)
+                  <tr>
+                    <td>
+                      <strong>{{ $booking->property->title ?? 'N/A' }}</strong>
+                    </td>
+                    <td>{{ $booking->move_in_date ? \Carbon\Carbon::parse($booking->move_in_date)->format('M d, Y') : 'N/A' }}</td>
+                    <td>
+                      @switch($booking->status)
+                        @case('Pending')
+                          <span class="badge bg-warning">Pending</span>
+                          @break
+                        @case('Approved')
+                          <span class="badge bg-info">Approved</span>
+                          @break
+                        @case('Active')
+                          <span class="badge bg-success">Active</span>
+                          @break
+                        @case('Completed')
+                          <span class="badge bg-secondary">Completed</span>
+                          @break
+                        @case('Cancelled')
+                          <span class="badge bg-danger">Cancelled</span>
+                          @break
+                      @endswitch
+                    </td>
+                    <td>{{ $booking->created_at->format('M d, Y') }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    @endif
+
+    <!-- Recent Reviews -->
+    @if($user->ratings && $user->ratings->count() > 0)
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Reviews Given</h5>
+        </div>
+        <div class="card-body">
+          @foreach($user->ratings->take(5) as $rating)
+            <div class="d-flex mb-3 pb-3 border-bottom">
+              <div class="flex-grow-1">
+                <h6 class="mb-1">{{ $rating->property->title ?? 'N/A' }}</h6>
+                <div class="mb-2">
+                  @for($i = 1; $i <= 5; $i++)
+                    @if($i <= $rating->rating)
+                      <i class='bx bxs-star text-warning'></i>
+                    @else
+                      <i class='bx bx-star text-muted'></i>
+                    @endif
+                  @endfor
+                  <span class="ms-1 text-muted">({{ $rating->rating }}/5)</span>
+                </div>
+                <p class="mb-1 text-muted small">{{ $rating->comment }}</p>
+                <small class="text-muted">{{ $rating->created_at->format('M d, Y') }}</small>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    @endif
+
   </div>
+
 </div>
 
 @endsection
@@ -164,227 +423,4 @@ function deleteUser(userId) {
   }
 }
 </script>
-@endsectionlabel text-muted">Program</label>
-              <p class="mb-0"><strong>{{ $user->program }}</strong></p>
-            </div>
-          @endif
-          @if($user->year_level)
-            <div class="col-md-6">
-              <label class="form-label text-muted">Year Level</label>
-              <p class="mb-0"><strong>{{ $user->year_level }}</strong></p>
-            </div>
-          @endif
-          @if($user->gender)
-            <div class="col-md-6">
-              <label class="form-label text-muted">Gender</label>
-              <p class="mb-0"><strong>{{ $user->gender }}</strong></p>
-            </div>
-          @endif
-          <div class="col-md-6">
-            <label class="form-label text-muted">Account Created</label>
-            <p class="mb-0"><strong>{{ $user->created_at->format('M d, Y') }}</strong></p>
-            <small class="text-muted">{{ $user->created_at->diffForHumans() }}</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Landlord Properties -->
-  @if($user->role === 'landlord' && $properties->count() > 0)
-    <div class="col-12 mb-4">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Properties ({{ $properties->count() }})</h5>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Property</th>
-                  <th>Address</th>
-                  <th>Price</th>
-                  <th>Bookings</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                @foreach($properties as $property)
-                  <tr>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        @if($property->images && $property->images->count() > 0)
-                          <img src="{{ asset('storage/' . $property->images->first()->image_path) }}" 
-                               alt="{{ $property->title }}" 
-                               class="rounded me-2" 
-                               style="width: 40px; height: 40px; object-fit: cover;">
-                        @else
-                          <div class="avatar avatar-sm me-2">
-                            <span class="avatar-initial rounded bg-label-info">
-                              <i class='bx bx-building-house'></i>
-                            </span>
-                          </div>
-                        @endif
-                        <strong>{{ $property->title }}</strong>
-                      </div>
-                    </td>
-                    <td>{{ Str::limit($property->address, 30) }}</td>
-                    <td>₱{{ number_format($property->price, 2) }}</td>
-                    <td>
-                      <span class="badge bg-label-primary">{{ $property->bookings_count ?? 0 }} Bookings</span>
-                    </td>
-                    <td>
-                      @if($property->is_active)
-                        <span class="badge bg-success">Active</span>
-                      @else
-                        <span class="badge bg-warning">Pending</span>
-                      @endif
-                    </td>
-                    <td>
-                      <a href="{{ route('properties.show', $property->id) }}" class="btn btn-sm btn-icon btn-outline-primary">
-                        <i class='bx bx-show'></i>
-                      </a>
-                    </td>
-                  </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  @endif
-
-  <!-- User Bookings -->
-  @if($user->bookings && $user->bookings->count() > 0)
-    <div class="col-12 mb-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Booking History ({{ $user->bookings->count() }})</h5>
-        </div>
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Property</th>
-                  <th>Move-in Date</th>
-                  <th>Move-out Date</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                @foreach($user->bookings->take(10) as $booking)
-                  <tr>
-                    <td><strong>#{{ $booking->booking_id }}</strong></td>
-                    <td>{{ $booking->property->title ?? 'N/A' }}</td>
-                    <td>{{ $booking->move_in_date ? \Carbon\Carbon::parse($booking->move_in_date)->format('M d, Y') : 'N/A' }}</td>
-                    <td>{{ $booking->move_out_date ? \Carbon\Carbon::parse($booking->move_out_date)->format('M d, Y') : 'N/A' }}</td>
-                    <td>
-                      @switch($booking->status)
-                        @case('Pending')
-                          <span class="badge bg-warning">Pending</span>
-                          @break
-                        @case('Approved')
-                          <span class="badge bg-info">Approved</span>
-                          @break
-                        @case('Active')
-                          <span class="badge bg-success">Active</span>
-                          @break
-                        @case('Completed')
-                          <span class="badge bg-secondary">Completed</span>
-                          @break
-                        @case('Cancelled')
-                          <span class="badge bg-danger">Cancelled</span>
-                          @break
-                      @endswitch
-                    </td>
-                    <td>{{ $booking->created_at->format('M d, Y') }}</td>
-                  </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  @endif
-
-  <!-- User Reviews -->
-  @if($user->ratings && $user->ratings->count() > 0)
-    <div class="col-12 mb-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Reviews Given ({{ $user->ratings->count() }})</h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            @foreach($user->ratings->take(6) as $rating)
-              <div class="col-md-6 mb-3">
-                <div class="card border">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                      <h6 class="mb-0">{{ $rating->property->title ?? 'N/A' }}</h6>
-                      <span class="badge bg-warning">⭐ {{ $rating->rating }}</span>
-                    </div>
-                    <p class="text-muted mb-2">{{ Str::limit($rating->review_text, 100) }}</p>
-                    <small class="text-muted">{{ $rating->created_at->format('M d, Y') }}</small>
-                  </div>
-                </div>
-              </div>
-            @endforeach
-          </div>
-        </div>
-      </div>
-    </div>
-  @endif
-
-</div>
-
-<!-- Edit User Modal -->
-<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Edit User</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
-        @csrf
-        @method('PUT')
-        <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">First Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="first_name" value="{{ $user->first_name ?? $user->name }}" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Last Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" name="last_name" value="{{ $user->last_name }}" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Email <span class="text-danger">*</span></label>
-              <input type="email" class="form-control" name="email" value="{{ $user->email }}" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Role <span class="text-danger">*</span></label>
-              <select class="form-select" name="role" required>
-                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>Tenant</option>
-                <option value="landlord" {{ $user->role === 'landlord' ? 'selected' : '' }}>Landlord</option>
-                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Contact Number</label>
-              <input type="text" class="form-control" name="contact_number" value="{{ $user->contact_number }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Student Number</label>
-              <input type="text" class="form-control" name="student_number" value="{{ $user->student_number }}">
-            </div>
-            <div class="col-md-6">
-              <label class="form-
+@endsection

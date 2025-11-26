@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,6 +16,7 @@ class Landlord extends Model
         'user_id',
         'phone',
         'company_name',
+        'business_address', // Added this field
     ];
 
     protected $casts = [
@@ -25,12 +27,12 @@ class Landlord extends Model
     // Relationships
     public function user()
     {
-         return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function properties()
     {
-          return $this->hasMany(Property::class);
+        return $this->hasMany(Property::class);
     }
 
     // Accessors

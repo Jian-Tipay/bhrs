@@ -362,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     @endif
                   </td>
                   <td>
-                    <a href="{{ route('properties.show', $property->id) }}" class="btn btn-sm btn-icon btn-outline-primary">
+                    <a href="{{ route('admin.properties.index', $property->id) }}" class="btn btn-sm btn-icon btn-outline-primary">
                       <i class='bx bx-show'></i>
                     </a>
                   </td>
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   <p class="card-text">
                     <i class='bx bx-money'></i> ₱{{ number_format($topProperty->price, 2) }}/mo
                   </p>
-                  <a href="{{ route('properties.show', $topProperty->id) }}" class="btn btn-sm btn-outline-primary w-100">
+                  <a href="{{ route('properties.view', $topProperty->id) }}" class="btn btn-sm btn-outline-primary w-100">
                     View Details
                   </a>
                 </div>

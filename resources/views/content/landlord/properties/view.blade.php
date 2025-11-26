@@ -10,7 +10,7 @@
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center">
-            <a href="{{ route('landlord.properties.show') }}" class="btn btn-sm btn-outline-secondary me-3">
+            <a href="{{ route('landlord.properties.index') }}" class="btn btn-sm btn-outline-secondary me-3">
               <i class='bx bx-arrow-back'></i> Back
             </a>
             <div>
@@ -22,7 +22,7 @@
             <a href="{{ route('landlord.properties.edit', $property->id) }}" class="btn btn-primary">
               <i class='bx bx-edit'></i> Edit Property
             </a>
-            <a href="{{ route('properties.show', $property->id) }}" class="btn btn-outline-primary" target="_blank">
+            <a href="{{ route('landlord.properties.view', $property->id) }}" class="btn btn-outline-primary" target="_blank">
               <i class='bx bx-link-external'></i> Public View
             </a>
           </div>
@@ -89,6 +89,58 @@
     </div>
   </div>
 
+  <!-- Property Views Statistics -->
+  <div class="col-12 mb-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">👁️ Property Views</h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="d-flex align-items-center">
+              <div class="avatar me-3">
+                <span class="avatar-initial rounded-circle bg-label-primary">
+                  <i class='bx bx-show bx-md'></i>
+                </span>
+              </div>
+              <div>
+                <p class="mb-0 text-muted small">Total Views</p>
+                <h4 class="mb-0">{{ number_format($totalViews) }}</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3 mb-md-0">
+            <div class="d-flex align-items-center">
+              <div class="avatar me-3">
+                <span class="avatar-initial rounded-circle bg-label-success">
+                  <i class='bx bx-user bx-md'></i>
+                </span>
+              </div>
+              <div>
+                <p class="mb-0 text-muted small">Unique Viewers</p>
+                <h4 class="mb-0">{{ number_format($uniqueViewers) }}</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="d-flex align-items-center">
+              <div class="avatar me-3">
+                <span class="avatar-initial rounded-circle bg-label-info">
+                  <i class='bx bx-trending-up bx-md'></i>
+                </span>
+              </div>
+              <div>
+                <p class="mb-0 text-muted small">Views (Last 30 Days)</p>
+                <h4 class="mb-0">{{ number_format($recentViews) }}</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Property Information -->
   <div class="col-md-8 mb-4">
     <!-- Property Image -->
@@ -96,14 +148,14 @@
       <div class="card-body p-0">
         @if($property->image && file_exists(public_path('assets/img/boarding/' . $property->image)))
           <img src="{{ asset('assets/img/boarding/' . $property->image) }}" 
-               class="img-fluid w-100" 
-               alt="{{ $property->title }}"
-               style="max-height: 400px; object-fit: cover;">
+              class="img-fluid w-100" 
+              alt="{{ $property->title }}"
+              style="max-height: 400px; object-fit: cover;">
         @else
           <img src="{{ asset('assets/img/boarding/default.jpg') }}" 
-               class="img-fluid w-100" 
-               alt="Default"
-               style="max-height: 400px; object-fit: cover;">
+              class="img-fluid w-100" 
+              alt="Default"
+              style="max-height: 400px; object-fit: cover;">
         @endif
       </div>
     </div>

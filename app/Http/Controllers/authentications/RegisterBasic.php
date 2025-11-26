@@ -10,6 +10,7 @@ use App\Services\NotificationService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Auth\Events\Registered;
 
 class RegisterBasic extends Controller
 {
@@ -89,15 +90,19 @@ class RegisterBasic extends Controller
 
             DB::commit();
 
-            // ✅ Auto-login only for students
+            // ✅ Handle tenant (user) registration with email verification
             if ($request->role === 'user') {
+                // Auto-login the tenant
                 auth()->login($user);
+                
+                // Trigger the email verification notification
+                event(new Registered($user));
 
-                return redirect()->route('dashboard.user')
-                    ->with('success', 'Registration successful! Welcome to your dashboard.');
+                // Redirect to verification notice page
+                return redirect()->route('verification.notice');
             }
 
-            // 🕒 Landlords wait for admin approval
+            // 🕒 Landlords wait for admin approval (no email verification needed)
             return redirect()->route('auth.pending-approval')
                 ->with('success', 'Registration successful! Your landlord account is pending admin approval. You will receive an email once approved.');
 
@@ -110,7 +115,6 @@ class RegisterBasic extends Controller
             ])->withInput($request->except('password', 'password_confirmation'));
         }
     }
-
 
     /**
      * Show pending approval page

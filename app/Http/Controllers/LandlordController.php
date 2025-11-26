@@ -10,7 +10,7 @@ use App\Models\Booking;
 use App\Models\Property;
 use App\Models\Rating;
 use Carbon\Carbon;
-
+use App\Models\PropertyView;
 class LandlordController extends Controller
 {
     /**
@@ -30,7 +30,7 @@ class LandlordController extends Controller
             'company_name' => $request->company_name,
         ]);
 
-        return redirect()->route('dashboard.landlord')->with('success', 'Landlord profile created!');
+        return redirect()->route('landlord.dashboard')->with('success', 'Landlord profile created!');
     }
 
     /**
@@ -42,7 +42,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get all property IDs belonging to the landlord
@@ -80,7 +80,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get booking with related data and verify it belongs to landlord's property
@@ -102,7 +102,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Find booking and verify it belongs to landlord's property
@@ -144,7 +144,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Find booking and verify it belongs to landlord's property
@@ -173,7 +173,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Find booking and verify it belongs to landlord's property
@@ -213,7 +213,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Find booking and verify it belongs to landlord's property
@@ -253,7 +253,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get all property IDs belonging to the landlord
@@ -340,7 +340,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get booking with related data
@@ -362,7 +362,7 @@ class LandlordController extends Controller
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get all property IDs belonging to the landlord
@@ -456,11 +456,13 @@ class LandlordController extends Controller
         return back()->with('success', 'Reply posted successfully!');
     }
 
-    /**
-     * Display reports page
-     */
-    /**
- * Display reports page
+ 
+
+/**
+ * Display reports page with real data
+ */
+/**
+ * Display reports page with real data
  */
 public function reports(Request $request)
 {
@@ -468,17 +470,20 @@ public function reports(Request $request)
     $landlord = $user->landlord;
 
     if (!$landlord) {
-        return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+        return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
     }
 
     // Get period (default 30 days)
     $period = $request->get('period', 30);
     $startDate = Carbon::now()->subDays($period);
+    $endDate = Carbon::now();
 
     // Get all property IDs
     $propertyIds = $landlord->properties()->pluck('id');
 
-    // Calculate revenue - based on monthly price * number of active/completed bookings
+    // ========================================
+    // 1. REVENUE CALCULATION
+    // ========================================
     $bookingsForRevenue = Booking::whereIn('property_id', $propertyIds)
         ->whereIn('status', ['Active', 'Completed'])
         ->where('created_at', '>=', $startDate)
@@ -489,27 +494,111 @@ public function reports(Request $request)
         return $booking->property->price;
     });
 
-    $totalBookings = Booking::whereIn('property_id', $propertyIds)
-        ->where('created_at', '>=', $startDate)
-        ->count();
+    // Previous period revenue for comparison
+    $previousStartDate = Carbon::now()->subDays($period * 2);
+    $previousEndDate = $startDate;
+    
+    $previousRevenue = Booking::whereIn('property_id', $propertyIds)
+        ->whereIn('status', ['Active', 'Completed'])
+        ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+        ->with('property')
+        ->get()
+        ->sum(function($booking) {
+            return $booking->property->price;
+        });
 
-    // Occupancy rate
+    $revenueChange = $previousRevenue > 0 
+        ? (($totalRevenue - $previousRevenue) / $previousRevenue) * 100 
+        : 0;
+
+    // ========================================
+    // 2. OCCUPANCY RATE
+    // ========================================
     $totalCapacity = $landlord->properties()->sum('capacity');
     $availableSlots = $landlord->properties()->sum('available_slots');
     $occupiedSlots = $totalCapacity - $availableSlots;
     $occupancyRate = $totalCapacity > 0 ? ($occupiedSlots / $totalCapacity) * 100 : 0;
 
-    // Average rating
-    $averageRating = Rating::whereIn('property_id', $propertyIds)->avg('rating') ?? 0;
-    $totalReviews = Rating::whereIn('property_id', $propertyIds)->count();
+    // ========================================
+    // 3. BOOKINGS COUNT
+    // ========================================
+    $totalBookings = Booking::whereIn('property_id', $propertyIds)
+        ->where('created_at', '>=', $startDate)
+        ->count();
 
-    // Property performance
+    $previousBookings = Booking::whereIn('property_id', $propertyIds)
+        ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+        ->count();
+
+    $bookingsChange = $previousBookings > 0 
+        ? (($totalBookings - $previousBookings) / $previousBookings) * 100 
+        : 0;
+
+    // ========================================
+    // 4. RATINGS
+    // ========================================
+    $allRatings = Rating::whereIn('property_id', $propertyIds)->get();
+    $averageRating = $allRatings->avg('rating') ?? 0;
+    $totalReviews = $allRatings->count();
+
+    // ========================================
+    // 5. PROPERTY VIEWS STATISTICS (FIXED)
+    // ========================================
+    // Get ALL views (not filtered by date for total)
+    $totalViews = PropertyView::whereIn('property_id', $propertyIds)->count();
+
+    // Get views for the selected period for comparison
+    $periodViews = PropertyView::whereIn('property_id', $propertyIds)
+        ->where('created_at', '>=', $startDate)
+        ->count();
+
+    $previousViews = PropertyView::whereIn('property_id', $propertyIds)
+        ->whereBetween('created_at', [$previousStartDate, $previousEndDate])
+        ->count();
+
+    $viewsChange = $previousViews > 0 
+        ? (($periodViews - $previousViews) / $previousViews) * 100 
+        : 0;
+
+    // Get ALL unique viewers (not just from the period)
+    $uniqueViewers = PropertyView::whereIn('property_id', $propertyIds)
+        ->distinct('user_id')
+        ->count('user_id');
+
+    // Calculate conversion rate (bookings from views in the period)
+    $conversionRate = $periodViews > 0 ? ($totalBookings / $periodViews) * 100 : 0;
+
+    // Views chart data (last 12 months)
+    $viewsChartData = [];
+    $viewsChartLabels = [];
+    
+    for ($i = 11; $i >= 0; $i--) {
+        $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+        $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+        
+        $monthlyViews = PropertyView::whereIn('property_id', $propertyIds)
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->count();
+        
+        $viewsChartLabels[] = $monthStart->format('M');
+        $viewsChartData[] = $monthlyViews;
+    }
+
+    // ========================================
+    // 6. PROPERTY PERFORMANCE
+    // ========================================
     $propertyPerformance = Property::whereIn('id', $propertyIds)
-        ->withCount('bookings')
+        ->withCount(['bookings' => function($query) use ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        }])
+        ->withCount('views') // Get ALL views, not filtered
         ->withAvg('ratings', 'rating')
-        ->get();
+        ->get()
+        ->sortByDesc('views_count'); // Sort by views instead of bookings
 
-    // Booking status counts
+    // ========================================
+    // 7. BOOKING STATUS COUNTS
+    // ========================================
     $activeBookings = Booking::whereIn('property_id', $propertyIds)
         ->where('status', 'Active')
         ->count();
@@ -524,14 +613,106 @@ public function reports(Request $request)
 
     $completedBookings = Booking::whereIn('property_id', $propertyIds)
         ->where('status', 'Completed')
+        ->where('created_at', '>=', $startDate)
         ->count();
+
+    // ========================================
+    // 8. REVENUE CHART DATA (Monthly)
+    // ========================================
+    $revenueChartData = [];
+    $revenueChartLabels = [];
+    
+    for ($i = 11; $i >= 0; $i--) {
+        $monthStart = Carbon::now()->subMonths($i)->startOfMonth();
+        $monthEnd = Carbon::now()->subMonths($i)->endOfMonth();
+        
+        $monthlyRevenue = Booking::whereIn('property_id', $propertyIds)
+            ->whereIn('status', ['Active', 'Completed'])
+            ->whereBetween('created_at', [$monthStart, $monthEnd])
+            ->with('property')
+            ->get()
+            ->sum(function($booking) {
+                return $booking->property->price;
+            });
+        
+        $revenueChartLabels[] = $monthStart->format('M');
+        $revenueChartData[] = $monthlyRevenue;
+    }
+
+    // ========================================
+    // 9. RECENT ACTIVITY
+    // ========================================
+    $recentActivity = [];
+    
+    // Recent bookings
+    $recentBookings = Booking::whereIn('property_id', $propertyIds)
+        ->with(['user', 'property'])
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+    
+    foreach ($recentBookings as $booking) {
+        $recentActivity[] = [
+            'type' => 'booking',
+            'title' => 'New Booking',
+            'message' => ($booking->user->name ?? 'Unknown') . ' booked ' . $booking->property->title,
+            'time' => $booking->created_at->diffForHumans(),
+            'color' => 'success'
+        ];
+    }
+    
+    // Recent ratings
+    $recentRatingActivity = Rating::whereIn('property_id', $propertyIds)
+        ->with(['user', 'property'])
+        ->orderBy('created_at', 'desc')
+        ->take(2)
+        ->get();
+    
+    foreach ($recentRatingActivity as $rating) {
+        $recentActivity[] = [
+            'type' => 'rating',
+            'title' => 'New Review',
+            'message' => $rating->rating . '-star review on ' . $rating->property->title,
+            'time' => $rating->created_at->diffForHumans(),
+            'color' => 'warning'
+        ];
+    }
+    
+    // Sort by time
+    usort($recentActivity, function($a, $b) {
+        return strtotime($b['time']) - strtotime($a['time']);
+    });
+    
+    $recentActivity = array_slice($recentActivity, 0, 4);
+
+    // ========================================
+    // 10. TOP PERFORMING PROPERTIES
+    // ========================================
+    $topProperties = Property::whereIn('id', $propertyIds)
+        ->withCount(['bookings' => function($query) use ($startDate) {
+            $query->where('created_at', '>=', $startDate);
+        }])
+        ->withCount('views') // Get ALL views
+        ->withAvg('ratings', 'rating')
+        ->orderByDesc('bookings_count')
+        ->take(5)
+        ->get();
 
     return view('content.landlord.reports.index', compact(
         'totalRevenue',
+        'revenueChange',
         'occupancyRate',
         'totalBookings',
+        'bookingsChange',
         'averageRating',
         'totalReviews',
+        'totalViews',
+        'periodViews',
+        'viewsChange',
+        'uniqueViewers',
+        'conversionRate',
+        'viewsChartData',
+        'viewsChartLabels',
         'propertyPerformance',
         'period',
         'totalCapacity',
@@ -539,10 +720,13 @@ public function reports(Request $request)
         'activeBookings',
         'pendingBookings',
         'approvedBookings',
-        'completedBookings'
+        'completedBookings',
+        'revenueChartData',
+        'revenueChartLabels',
+        'recentActivity',
+        'topProperties'
     ));
 }
-
     /**
      * Export reports as PDF
      */
@@ -570,7 +754,7 @@ public function reports(Request $request)
         $landlord = $user->landlord;
 
         if (!$landlord) {
-            return redirect()->route('dashboard.landlord')->with('error', 'Landlord profile not found.');
+            return redirect()->route('landlord.dashboard')->with('error', 'Landlord profile not found.');
         }
 
         // Get statistics
@@ -590,32 +774,85 @@ public function reports(Request $request)
     /**
      * Update profile
      */
-    public function updateProfile(Request $request)
-    {
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
-            'phone' => 'nullable|string|max:20',
-            'contact_number' => 'nullable|string|max:15',
-        ]);
+    /**
+ * Update profile
+ */
 
-        $user = Auth::user();
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
-        $user->email = $request->email;
-        $user->contact_number = $request->contact_number;
-        $user->save();
 
-        // Update landlord profile
-        if ($user->landlord) {
-            $user->landlord->update([
-                'phone' => $request->phone,
-            ]);
+/**
+ * Update profile
+ */
+public function updateProfile(Request $request)
+{
+    $user = Auth::user();
+    $landlord = $user->landlord;
+    
+    if (!$landlord) {
+        return back()->with('error', 'Landlord profile not found.');
+    }
+    
+    // Validation rules
+    $rules = [
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $user->id,
+        'contact_number' => 'nullable|string|max:15',
+        'first_name' => 'nullable|string|max:255',
+        'last_name' => 'nullable|string|max:255',
+        'gender' => 'nullable|in:Male,Female,Other',
+        'password' => 'nullable|min:8',
+        'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        // Landlord-specific fields
+        'phone' => 'nullable|string|max:20',
+        'company_name' => 'nullable|string|max:255',
+        'business_address' => 'nullable|string',
+    ];
+
+    $validated = $request->validate($rules);
+
+    // Update basic user information
+    $user->name = $validated['name'];
+    $user->email = $validated['email'];
+    $user->contact_number = $validated['contact_number'] ?? null;
+    $user->first_name = $validated['first_name'] ?? null;
+    $user->last_name = $validated['last_name'] ?? null;
+    $user->gender = $validated['gender'] ?? null;
+
+    // Update password if provided
+    if ($request->filled('password')) {
+        $user->password = Hash::make($validated['password']);
+    }
+
+    // Handle profile picture upload
+    if ($request->hasFile('profile_picture')) {
+        // Delete old profile picture if exists
+        if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+            unlink(public_path($user->profile_picture));
         }
 
-        return back()->with('success', 'Profile updated successfully!');
+        $image = $request->file('profile_picture');
+        $imageName = 'profile_' . $user->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+        $destinationPath = public_path('assets/img/profiles');
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($destinationPath)) {
+            mkdir($destinationPath, 0755, true);
+        }
+        
+        // Move the image
+        $image->move($destinationPath, $imageName);
+        $user->profile_picture = 'assets/img/profiles/' . $imageName;
     }
+
+    $user->save();
+
+    // Update landlord-specific information
+    $landlord->phone = $validated['phone'] ?? null;
+    $landlord->company_name = $validated['company_name'] ?? null;
+    $landlord->business_address = $validated['business_address'] ?? null;
+    $landlord->save();
+
+    return back()->with('success', 'Profile updated successfully!');
+}
 
     /**
      * Update password

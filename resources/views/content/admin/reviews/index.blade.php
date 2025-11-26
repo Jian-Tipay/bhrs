@@ -222,7 +222,7 @@
                           
                           <!-- Action Buttons -->
                           <div class="d-flex gap-2 mt-3">
-                            <a href="{{ route('properties.show', $review->property->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <a href="{{ route('properties.view', $review->property->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
                               <i class='bx bx-show'></i> View Property
                             </a>
                             <form action="{{ route('admin.reviews.delete', $review->rating_id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this review?')">

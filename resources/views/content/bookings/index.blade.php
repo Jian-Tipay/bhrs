@@ -68,7 +68,7 @@
           <!-- Booking Details -->
           <div class="col-md-7 col-12">
             <h5 class="mb-2">
-              <a href="{{ route('properties.show', $booking->property->id) }}" class="text-decoration-none">
+              <a href="{{ route('properties.view', $booking->property->id) }}" class="text-decoration-none">
                 {{ $booking->property->title }}
               </a>
             </h5>
@@ -121,7 +121,7 @@
               </button>
               @endif
 
-              <a href="{{ route('properties.show', $booking->property->id) }}" 
+              <a href="{{ route('properties.view', $booking->property->id) }}" 
                  class="btn btn-sm btn-outline-secondary">
                 <i class='bx bx-building'></i> View Property
               </a>

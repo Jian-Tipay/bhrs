@@ -13,13 +13,15 @@
       "url": "/find-boarding-houses",
       "name": "Find Boarding House",
       "icon": "menu-icon tf-icons bx bx-search-alt",
-      "slug": "recommendations"
+      "slug": "recommendations",
+      "requiresVerification": true
     },
     {
       "url": "/my-ratings",
       "name": "My Reviews",
       "icon": "menu-icon tf-icons bx bx-star",
-      "slug": "ratings.index"
+      "slug": "ratings.index",
+      "requiresVerification": true
     },
     {
       "menuHeader": "Bookings"
@@ -28,7 +30,8 @@
       "url": "/bookings",
       "name": "My Bookings",
       "icon": "menu-icon tf-icons bx bx-calendar-check",
-      "slug": "bookings.index"
+      "slug": "bookings.index",
+      "requiresVerification": true
     },
     {
       "menuHeader": "Preferences"
@@ -37,7 +40,8 @@
       "url": "/my-preferences",
       "name": "My Preferences",
       "icon": "menu-icon tf-icons bx bx-slider-alt",
-      "slug": "preferences.index"
+      "slug": "preferences.index",
+      "requiresVerification": true
     },
     {
       "menuHeader": "Account"

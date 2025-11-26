@@ -109,7 +109,19 @@
       </div>
       <div class="card-body">
         <div class="text-center mb-3">
-          <img src="{{ asset('assets/img/avatars/1.png') }}" alt="Avatar" class="rounded-circle mb-2" style="width: 80px; height: 80px;">
+          @if($booking->user->profile_picture)
+            <img src="{{ asset($booking->user->profile_picture) }}" 
+                 alt="{{ $booking->user->first_name ?? $booking->user->name }}" 
+                 class="rounded-circle mb-2" 
+                 style="width: 80px; height: 80px; object-fit: cover;">
+          @else
+            <div class="d-flex justify-content-center mb-2">
+              <span class="avatar-initial rounded-circle bg-label-primary" 
+                    style="width: 80px; height: 80px; font-size: 32px; display: flex; align-items: center; justify-content: center;">
+                {{ strtoupper(substr($booking->user->first_name ?? $booking->user->name, 0, 1)) }}
+              </span>
+            </div>
+          @endif
           <h5 class="mb-0">{{ $booking->user->first_name ?? $booking->user->name }} {{ $booking->user->last_name ?? '' }}</h5>
           <p class="text-muted mb-0">{{ $booking->user->email }}</p>
         </div>
@@ -118,13 +130,53 @@
         
         <div class="mb-2">
           <strong>Contact Number:</strong>
-          <p class="mb-0">{{ $booking->user->phone ?? 'N/A' }}</p>
+          <p class="mb-0">
+            @if($booking->user->contact_number)
+              <i class='bx bx-phone me-1'></i>{{ $booking->user->contact_number }}
+            @else
+              <span class="text-muted">N/A</span>
+            @endif
+          </p>
         </div>
         
         <div class="mb-2">
-          <strong>Address:</strong>
-          <p class="mb-0">{{ $booking->user->address ?? 'N/A' }}</p>
+          <strong>Guardian Number:</strong>
+          <p class="mb-0">
+            @if($booking->user->guardian_number)
+              <i class='bx bx-phone me-1'></i>{{ $booking->user->guardian_number }}
+            @else
+              <span class="text-muted">N/A</span>
+            @endif
+          </p>
         </div>
+
+        @if($booking->user->student_number)
+        <div class="mb-2">
+          <strong>Student Number:</strong>
+          <p class="mb-0">{{ $booking->user->student_number }}</p>
+        </div>
+        @endif
+
+        @if($booking->user->program)
+        <div class="mb-2">
+          <strong>Program:</strong>
+          <p class="mb-0">{{ $booking->user->program }}</p>
+        </div>
+        @endif
+
+        @if($booking->user->year_level)
+        <div class="mb-2">
+          <strong>Year Level:</strong>
+          <p class="mb-0">{{ $booking->user->year_level }}</p>
+        </div>
+        @endif
+
+        @if($booking->user->gender)
+        <div class="mb-2">
+          <strong>Gender:</strong>
+          <p class="mb-0">{{ $booking->user->gender }}</p>
+        </div>
+        @endif
         
         <div class="mb-2">
           <strong>Member Since:</strong>
@@ -133,13 +185,18 @@
 
         <hr class="my-3">
 
-        <div class="d-grid">
-          <a href="mailto:{{ $booking->user->email }}" class="btn btn-outline-primary mb-2">
+        <div class="d-grid gap-2">
+          <a href="mailto:{{ $booking->user->email }}" class="btn btn-outline-primary">
             <i class='bx bx-envelope me-1'></i> Send Email
           </a>
-          @if($booking->user->phone)
-          <a href="tel:{{ $booking->user->phone }}" class="btn btn-outline-success">
+          @if($booking->user->contact_number)
+          <a href="tel:{{ $booking->user->contact_number }}" class="btn btn-outline-success">
             <i class='bx bx-phone me-1'></i> Call Tenant
+          </a>
+          @endif
+          @if($booking->user->guardian_number)
+          <a href="tel:{{ $booking->user->guardian_number }}" class="btn btn-outline-info">
+            <i class='bx bx-phone me-1'></i> Call Guardian
           </a>
           @endif
         </div>
@@ -157,8 +214,8 @@
       <div class="card-body">
         <div class="row">
           <div class="col-md-4">
-            @if($booking->property->image)
-              <img src="{{ asset('storage/' . $booking->property->image) }}" 
+            @if($booking->property->images && $booking->property->images->count() > 0)
+              <img src="{{ asset('storage/' . $booking->property->images->first()->image_path) }}" 
                    alt="{{ $booking->property->title }}" 
                    class="rounded w-100"
                    style="height: 200px; object-fit: cover;">
@@ -195,7 +252,7 @@
             </div>
 
             <div class="mt-3">
-              <a href="{{ route('properties.show', $booking->property->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+              <a href="{{ route('properties.view', $booking->property->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
                 <i class='bx bx-link-external'></i> View Property
               </a>
             </div>
@@ -208,7 +265,7 @@
         <div class="d-flex flex-wrap gap-2">
           @foreach($booking->property->propertyAmenities as $propertyAmenity)
             <span class="badge bg-label-info">
-              <i class='bx bx-check'></i> {{ $propertyAmenity->amenity->name }}
+              <i class='bx bx-check'></i> {{ $propertyAmenity->amenity->amenity_name }}
             </span>
           @endforeach
         </div>
@@ -238,19 +295,31 @@
           <div class="col-md-6">
             <div class="border rounded p-3">
               <small class="text-muted">Move-in Date</small>
-              <h6 class="mb-0">{{ \Carbon\Carbon::parse($booking->move_in_date)->format('M d, Y') ?? 'N/A' }}</h6>
+              <h6 class="mb-0">
+                @if($booking->move_in_date)
+                  {{ \Carbon\Carbon::parse($booking->move_in_date)->format('M d, Y') }}
+                @else
+                  <span class="text-muted">N/A</span>
+                @endif
+              </h6>
             </div>
           </div>
           <div class="col-md-6">
             <div class="border rounded p-3">
-              <small class="text-muted">Duration</small>
-              <h6 class="mb-0">{{ $booking->duration ?? 'N/A' }} month(s)</h6>
+              <small class="text-muted">Move-out Date</small>
+              <h6 class="mb-0">
+                @if($booking->move_out_date)
+                  {{ \Carbon\Carbon::parse($booking->move_out_date)->format('M d, Y') }}
+                @else
+                  <span class="text-muted">N/A</span>
+                @endif
+              </h6>
             </div>
           </div>
           <div class="col-md-6">
             <div class="border rounded p-3">
-              <small class="text-muted">Total Amount</small>
-              <h6 class="mb-0 text-success">₱{{ number_format($booking->total_price ?? $booking->property->price, 2) }}</h6>
+              <small class="text-muted">Monthly Rent</small>
+              <h6 class="mb-0 text-success">₱{{ number_format($booking->property->price, 2) }}</h6>
             </div>
           </div>
           <div class="col-md-6">

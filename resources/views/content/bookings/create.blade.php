@@ -6,7 +6,7 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-12 mb-3">
-      <a href="{{ route('properties.show', $property->id) }}" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ route('properties.view', $property->id) }}" class="btn btn-sm btn-outline-secondary">
         <i class='bx bx-arrow-back'></i> Back to Property
       </a>
     </div>
@@ -97,7 +97,7 @@
               <button type="submit" class="btn btn-primary">
                 <i class='bx bx-send'></i> Submit Booking Request
               </button>
-              <a href="{{ route('properties.show', $property->id) }}" class="btn btn-outline-secondary">
+              <a href="{{ route('properties.view', $property->id) }}" class="btn btn-outline-secondary">
                 <i class='bx bx-x'></i> Cancel
               </a>
             </div>

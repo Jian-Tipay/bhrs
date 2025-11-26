@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 class PropertyController extends Controller
 {
     /**
@@ -29,44 +29,55 @@ class PropertyController extends Controller
      * Landlord preview their own property (no booking)
      */
     public function landlordShow(Property $property)
-    {
-        // Check if landlord owns this property
-        if (!$this->isOwner($property)) {
-            abort(403, 'This action is unauthorized.');
-        }
-
-        // Load relationships
-        $property->load(['landlord.user', 'propertyAmenities.amenity', 'ratings.user', 'bookings']);
-
-        // Get ratings statistics
-        $ratings = $property->ratings;
-        $averageRating = $ratings->avg('rating');
-        $totalReviews = $ratings->count();
-
-        // Get bookings statistics
-        $totalBookings = $property->bookings()->count();
-        $activeBookings = $property->bookings()->where('status', 'Active')->count();
-        $pendingBookings = $property->bookings()->where('status', 'Pending')->count();
-
-        // Get recent bookings
-        $recentBookings = $property->bookings()
-            ->with('user')
-            ->latest()
-            ->take(5)
-            ->get();
-
-        return view('content.landlord.properties.view', compact(
-            'property',
-            'ratings',
-            'averageRating',
-            'totalReviews',
-            'totalBookings',
-            'activeBookings',
-            'pendingBookings',
-            'recentBookings'
-        ));
+{
+    // Check if landlord owns this property
+    if (!$this->isOwner($property)) {
+        abort(403, 'This action is unauthorized.');
     }
 
+    // Load relationships
+    $property->load(['landlord.user', 'propertyAmenities.amenity', 'ratings.user', 'bookings']);
+
+    // Get ratings statistics
+    $ratings = $property->ratings;
+    $averageRating = $ratings->avg('rating');
+    $totalReviews = $ratings->count();
+
+    // Get bookings statistics
+    $totalBookings = $property->bookings()->count();
+    $activeBookings = $property->bookings()->where('status', 'Active')->count();
+    $pendingBookings = $property->bookings()->where('status', 'Pending')->count();
+
+    // Get property views count
+    $totalViews = $property->views()->count();
+    $uniqueViewers = $property->views()->distinct('user_id')->count('user_id');
+    
+    // Get recent views (last 30 days)
+    $recentViews = $property->views()
+        ->where('created_at', '>=', Carbon::now()->subDays(30))
+        ->count();
+
+    // Get recent bookings
+    $recentBookings = $property->bookings()
+        ->with('user')
+        ->latest()
+        ->take(5)
+        ->get();
+
+    return view('content.landlord.properties.view', compact(
+        'property',
+        'ratings',
+        'averageRating',
+        'totalReviews',
+        'totalBookings',
+        'activeBookings',
+        'pendingBookings',
+        'recentBookings',
+        'totalViews',
+        'uniqueViewers',
+        'recentViews'
+    ));
+}
     /**
      * Show the form for creating a new property
      */
@@ -202,7 +213,7 @@ class PropertyController extends Controller
                 DB::commit();
                 Log::info('Transaction committed successfully');
 
-                return redirect()->route('landlord.properties.show')
+                return redirect()->route('landlord.properties.index')
                     ->with('success', 'Property added successfully.');
 
             } catch (\Exception $e) {
@@ -229,10 +240,6 @@ class PropertyController extends Controller
         }
     }
 
-    /**
-     * Display a single property (public view)
-     * This is accessible by both landlords and users
-     */
     public function show($id)
     {
         $property = Property::with(['landlord.user', 'propertyAmenities.amenity', 'ratings', 'bookings'])->findOrFail($id);
@@ -374,7 +381,7 @@ class PropertyController extends Controller
 
                 DB::commit();
 
-                return redirect()->route('landlord.properties.show')
+                return redirect()->route('landlord.properties.index')
                     ->with('success', 'Property updated successfully.');
 
             } catch (\Exception $e) {
@@ -417,7 +424,7 @@ class PropertyController extends Controller
 
             DB::commit();
 
-            return redirect()->route('landlord.properties.show')
+            return redirect()->route('landlord.properties.index')
                 ->with('success', 'Property deleted successfully.');
 
         } catch (\Exception $e) {

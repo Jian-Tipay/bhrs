@@ -1,0 +1,277 @@
+<?php $__env->startSection('title', 'Login - SLSU StaySmart'); ?>
+
+<?php $__env->startSection('page-style'); ?>
+<!-- Page CSS -->
+<link rel="stylesheet" href="<?php echo e(asset('assets/vendor/css/pages/page-auth.css')); ?>">
+<style>
+  /* Split Layout Styling */
+  .auth-split {
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Left Side (Image and Welcome) */
+  .auth-left {
+    flex: 1;
+    background: url('<?php echo e(asset('assets/img/slsu_bg.jpg')); ?>') center center / cover no-repeat;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    animation: fadeInLeft 1.2s ease-in-out;
+  }
+
+  /* Overlay for text contrast */
+  .auth-left::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 20, 50, 0.65);
+    z-index: 0;
+  }
+
+  .auth-left-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    animation: slideUp 1.2s ease-in-out;
+  }
+
+  .auth-left-content img {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 1.8s ease-in-out;
+  }
+
+  .auth-left-content h3 {
+    font-weight: 700;
+    font-size: 1.75rem;
+    animation: fadeInUp 1.5s ease;
+  }
+
+  .auth-left-content p {
+    font-size: 1rem;
+    color: #dbe4ff;
+    animation: fadeInUp 2s ease;
+  }
+
+  /* Right Side (Form) */
+  .auth-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    padding: 2rem;
+    animation: fadeInRight 1.2s ease-in-out;
+  }
+
+  .card {
+    animation: popIn 0.9s ease-in-out;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Responsive */
+  @media (max-width: 992px) {
+    .auth-left {
+      display: none;
+    }
+  }
+
+  /* Animations */
+  @keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(60px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="auth-split">
+  
+  <!-- LEFT SIDE (SLSU Image + Welcome Text) -->
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <img src="<?php echo e(asset('assets/img/slsu_logo.png')); ?>" alt="SLSU Logo">
+      <h3>Welcome to SLSU StaySmart</h3>
+      <p>Your smart companion in finding the best boarding houses around SLSU.</p>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE (Login Form) -->
+  <div class="auth-right">
+    <div class="w-100" style="max-width: 420px;">
+      <div class="card shadow-lg rounded-4 border-0">
+        <div class="card-body">
+
+          <div class="text-center mb-3">
+            <h4 class="fw-bold text-primary">Sign in to StaySmart</h4>
+          </div>
+
+          
+          <?php if($errors->any()): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <?php echo e($errors->first()); ?>
+
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <?php endif; ?>
+
+          <!-- Loading Overlay -->
+          <div id="loading-overlay" style="
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;">
+            <div class="text-center">
+              <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3 text-muted">Verifying your login...</p>
+            </div>
+          </div>
+
+          <!-- Login Form -->
+          <form id="formAuthentication" class="mb-3" action="<?php echo e(route('auth.login.process')); ?>" method="POST">
+            <?php echo csrf_field(); ?>
+            <div class="mb-4">
+              <label for="studId" class="form-label fw-semibold">Student Number</label>
+              <input type="text" class="form-control rounded-pill" id="studId" name="studId"
+                     placeholder="Enter your SLSU Student Number" autofocus required value="<?php echo e(old('studId')); ?>">
+            </div>
+
+            <div class="mb-4 form-password-toggle">
+              <div class="d-flex justify-content-between align-items-center">
+                <label class="form-label fw-semibold" for="password">Password</label>
+                <a href="#"><small>Forgot Password?</small></a>
+              </div>
+              <div class="input-group input-group-merge">
+                <input type="password" id="password" class="form-control rounded-start-pill" 
+                       name="password" placeholder="••••••••••" required />
+                <span class="input-group-text cursor-pointer rounded-end-pill">
+                  <i class="bx bx-hide"></i>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="remember" name="remember">
+              <label class="form-check-label" for="remember">Remember Me</label>
+            </div>
+
+            <div class="d-grid">
+              <button class="btn btn-primary rounded-pill fw-semibold" type="submit" id="submitBtn">
+                Sign In
+              </button>
+            </div>
+          </form>
+
+          <p class="text-center mt-3">
+            <span>New to StaySmart?</span>
+            <a href="<?php echo e(url('auth/register-basic')); ?>">
+              <span class="fw-semibold text-primary">Create an Account</span>
+            </a>
+          </p>
+
+          <p class="text-center text-muted small mt-4">
+            © <?php echo e(date('Y')); ?> SLSU StaySmart — Smart Boarding House Recommender for SLSU Students
+          </p>
+
+          <!-- reCAPTCHA Badge Notice -->
+          <p class="text-center text-muted small mt-2" style="font-size: 0.75rem;">
+            This site is protected by reCAPTCHA and the Google
+            <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a> and
+            <a href="https://policies.google.com/terms" target="_blank">Terms of Service</a> apply.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('page-script'); ?>
+<!-- Load reCAPTCHA v3 (Invisible) -->
+<script src="https://www.google.com/recaptcha/api.js?render=<?php echo e(config('services.recaptcha.site_key')); ?>"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formAuthentication');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing In...';
+      
+      // Show loading overlay
+      loadingOverlay.style.display = 'flex';
+      
+      // Execute reCAPTCHA v3
+      grecaptcha.ready(function() {
+        grecaptcha.execute('<?php echo e(config('services.recaptcha.site_key')); ?>', {action: 'login'})
+          .then(function(token) {
+            // Add token to form
+            let input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'g-recaptcha-response';
+            input.value = token;
+            form.appendChild(input);
+            
+            // Submit form
+            form.submit();
+          })
+          .catch(function(error) {
+            console.error('reCAPTCHA error:', error);
+            loadingOverlay.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Sign In';
+            alert('Security verification failed. Please refresh and try again.');
+          });
+      });
+    });
+  });
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts/blankLayout', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\renzl\Downloads\myprojects\bhrs\resources\views/content/authentications/auth-login-basic.blade.php ENDPATH**/ ?>

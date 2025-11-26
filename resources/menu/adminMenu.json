@@ -62,12 +62,6 @@
       "menuHeader": "System"
     },
     {
-      "url": "/admin/reports",
-      "name": "Reports",
-      "icon": "menu-icon tf-icons bx bx-bar-chart-alt-2",
-      "slug": "admin-reports"
-    },
-    {
       "url": "/admin/activity-logs",
       "name": "Activity Logs",
       "icon": "menu-icon tf-icons bx bx-history",

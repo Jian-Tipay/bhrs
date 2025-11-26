@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "npm run development",
-    "build": "npm run build",
     "development": "mix",
     "watch": "mix watch",
     "watch-poll": "mix watch -- --watch-options-poll=1000",
     "hot": "mix watch --hot",
     "prod": "npm run production",
-    "production": "mix --production"
+    "production": "mix --production",
+    "build": "mix --production"
   },
   "devDependencies": {
     "@babel/core": "7.22.5",
